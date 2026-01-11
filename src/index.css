@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-activo: #10b981;
+  --color-proximo: #f59e0b;
+  --color-vencido: #ef4444;
+  --color-pendiente: #6b7280;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.estado-activo {
+  @apply bg-emerald-100 text-emerald-800 border-emerald-200;
+}
+
+.estado-proximo {
+  @apply bg-amber-100 text-amber-800 border-amber-200;
+}
+
+.estado-vencido {
+  @apply bg-red-100 text-red-800 border-red-200;
+}
+
+.estado-pendiente {
+  @apply bg-gray-100 text-gray-800 border-gray-200;
+}
+
+.region-path {
+  @apply transition-all duration-200 cursor-pointer;
+  fill: #e2e8f0;
+  stroke: #94a3b8;
+  stroke-width: 1;
+}
+
+.region-path:hover {
+  fill: #3b82f6;
+  stroke: #1d4ed8;
+}
+
+.region-path.selected {
+  fill: #2563eb;
+  stroke: #1e40af;
+}
+
+.region-path.has-data {
+  fill: #93c5fd;
+}
+
+.table-row-hover:hover {
+  @apply bg-blue-50;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.chat-bubble-user {
+  @apply bg-blue-600 text-white rounded-2xl rounded-br-md;
+}
+
+.chat-bubble-ai {
+  @apply bg-gray-100 text-gray-800 rounded-2xl rounded-bl-md;
+}

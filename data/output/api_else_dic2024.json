@@ -1,0 +1,1768 @@
+[
+  {
+    "ocid": "ocds-dgv273-seacev3-1089084",
+    "tender_id": "1089084",
+    "nomenclatura": "CP-SM-52-2024-ELSE-1",
+    "descripcion": "SERVICIO DE PINTADO DE TUBERÍAS DE PRESIÓN DE LAS CENTRALES HIDROELÉCTRICAS",
+    "tipo_procedimiento": "Concurso Público",
+    "categoria": "services",
+    "valor_referencial": 1443946.75,
+    "moneda": "PEN",
+    "fecha_publicacion": "2024-12-05T12:50:00-05:00",
+    "cronograma": {
+      "convocatoria_inicio": "2024-12-05T00:00:00-05:00",
+      "convocatoria_fin": "2024-12-05T00:00:00-05:00",
+      "consultas_inicio": "2024-12-06T00:01:00-05:00",
+      "consultas_fin": "2024-12-27T23:59:00-05:00",
+      "buena_pro": null
+    },
+    "entidad": {
+      "nombre": "EMPRESA REGIONAL DE SERVICIOS PUBLICOS DE ELECTRICIDAD DEL SUR ESTE S.A.",
+      "ruc": "20116544289",
+      "direccion": "MARISCAL SUCRE Nº 400 URB. BANCOPATA",
+      "departamento": "CUSCO",
+      "telefono": "953759805"
+    },
+    "postores": [
+      {
+        "ruc": "20545531888",
+        "nombre": "BABO EXPORTACION S.R.L."
+      },
+      {
+        "ruc": "1647821",
+        "nombre": "CONSORCIO CCAPI 10"
+      },
+      {
+        "ruc": "20606954434",
+        "nombre": "TERRA D' AVANGUARDIA S.A."
+      },
+      {
+        "ruc": "20603469578",
+        "nombre": "CIRCOLO CONTRATISTAS GENERALES SOCIEDAD ANÓNIMA CERRADA"
+      },
+      {
+        "ruc": "20520577018",
+        "nombre": "ANTHONY & FABIANA CONTRATISTAS GENERALES SOCIEDAD ANONIMA CERRADA-AN & FA CONTRATISTAS GENERALES SAC"
+      },
+      {
+        "ruc": "20602597688",
+        "nombre": "CONSTRUCTORA Y CONSULTORA R & M INGENIEROS S.A.C."
+      },
+      {
+        "ruc": "20609111845",
+        "nombre": "ARKHAM INDUSTRIAL S.R.L."
+      },
+      {
+        "ruc": "20607571890",
+        "nombre": "INMOBILIARIA PIÑARRETA S.A.C"
+      },
+      {
+        "ruc": "20557084364",
+        "nombre": "URBANCAD SOCIEDAD ANONIMA CERRADA"
+      },
+      {
+        "ruc": "20534093005",
+        "nombre": "EMPRESA CONSTRUCTORA MECEC S.R.L."
+      },
+      {
+        "ruc": "10283152079",
+        "nombre": "SERNA DUEÑAS REYNALDO WILBER"
+      },
+      {
+        "ruc": "20602976387",
+        "nombre": "DISEÑOS PROYECTOS METALMECANICOS Y CONSTRUCCION SOCIEDAD ANONIMA CERRADA - DIMETCO S.A.C."
+      },
+      {
+        "ruc": "20406507506",
+        "nombre": "ELECTROLITO S.A.C."
+      },
+      {
+        "ruc": "20510446659",
+        "nombre": "INGENIERIA DE PROYECTOS, MONTAJES Y SERVICIOS EMPRESA INDIVIDUAL DE RESPONSABILIDAD LIMITADA"
+      },
+      {
+        "ruc": "20563715163",
+        "nombre": "CORPORACION COTE CONTRATISTAS & GRUPO DIAZ S.A.C."
+      },
+      {
+        "ruc": "10250033635",
+        "nombre": "LUDENA LIMACHI DAVID"
+      },
+      {
+        "ruc": "20602244777",
+        "nombre": "FREISA PERU EMPRESA CONSTRUCTORA E.I.R.L."
+      },
+      {
+        "ruc": "20609800837",
+        "nombre": "TOP EMPRESARIAL E.I.R.L."
+      },
+      {
+        "ruc": "20601973406",
+        "nombre": "LAYO CONSTRUCTORA Y SERVICIOS E.I.R.L."
+      },
+      {
+        "ruc": "20450632598",
+        "nombre": "HYDROGEN  ENERGY PERU SOCIEDAD ANONIMA"
+      },
+      {
+        "ruc": "20604220654",
+        "nombre": "CORPORACION DUNIVOS EMPRESA INDIVIDUAL DE RESPONSABILIDAD LIMITADA"
+      },
+      {
+        "ruc": "20610808621",
+        "nombre": "INVERSIONES Y REPRESENTACIONES JOSELITO E.I.R.L."
+      },
+      {
+        "ruc": "20612691631",
+        "nombre": "SIMATEC PERU S.A.C."
+      },
+      {
+        "ruc": "20548653763",
+        "nombre": "TECHNOLOGY SOLUTION GROUP S.A.C."
+      },
+      {
+        "ruc": "20513324074",
+        "nombre": "INVERSIONES D'VERDI S.A.C."
+      },
+      {
+        "ruc": "20609849267",
+        "nombre": "MULTISERVICIOS CAMERO S.R.L."
+      },
+      {
+        "ruc": "20601080436",
+        "nombre": "CONTRATISTAS Y CONSULTORES RIMBALDO EMPRESA INDIVIDUAL DE RESPONSABILIDAD LIMITADA"
+      },
+      {
+        "ruc": "20612979902",
+        "nombre": "DAIVAL OBRAS E INGENIERIA E.I.R.L."
+      },
+      {
+        "ruc": "20604833681",
+        "nombre": "JSG CONSTRUCTORES S.A.C."
+      },
+      {
+        "ruc": "20609659093",
+        "nombre": "TIENDAFIABLE S.A.C."
+      },
+      {
+        "ruc": "20566366500",
+        "nombre": "SESNYCOM & ASOCIADOS S.A.C. SESNYCOM S.A.C."
+      },
+      {
+        "ruc": "20605545948",
+        "nombre": "MAYOLDA INVERSIONES S.A.C."
+      },
+      {
+        "ruc": "20564077152",
+        "nombre": "F CONSTRUCTORA FABIO´S EMPRESA INDIVIDUAL DE RESPONSABILIDAD LIMITADA - CONSTRUC FABIO´S E.I.R.L."
+      },
+      {
+        "ruc": "20602092233",
+        "nombre": "CARBAO S.A.C."
+      },
+      {
+        "ruc": "20602549381",
+        "nombre": "VARJUT INVESTMENTS S.A.C."
+      },
+      {
+        "ruc": "20603425104",
+        "nombre": "TECNICAS DE INGENIERIA Y CONTRATOS S.A.C. - TEINGECON S.A.C."
+      },
+      {
+        "ruc": "20448194737",
+        "nombre": "CONTRATISTA INMOBILIARIA CONSULTORA Y SERVICIOS AFINES H&A S.R.L."
+      },
+      {
+        "ruc": "20274419637",
+        "nombre": "J.C.A. CONTRATISTAS GENERALES S.R.LTDA."
+      },
+      {
+        "ruc": "20550683645",
+        "nombre": "INVERCON PROYECTOS S.A.C."
+      },
+      {
+        "ruc": "20604700591",
+        "nombre": "GRUPO HERRERA CONTRATISTAS GENERALES S.A.C."
+      },
+      {
+        "ruc": "10437166043",
+        "nombre": "PANDO FARRO JESUS EDINSON"
+      },
+      {
+        "ruc": "20608231685",
+        "nombre": "CRG INGENIEROS E.I.R.L."
+      },
+      {
+        "ruc": "20604709424",
+        "nombre": "CARMOBARRI EMPRESA INDIVIDUAL DE RESPONSABILIDAD LIMITADA"
+      },
+      {
+        "ruc": "20612133507",
+        "nombre": "DEVGROP PROYECTOS S.A.C.S."
+      },
+      {
+        "ruc": "20563896796",
+        "nombre": "AMERINKA SAC"
+      },
+      {
+        "ruc": "20564450724",
+        "nombre": "CONSTRUCTORA ALAM SOCIEDAD ANONIMA CERRADA-CONSTRUCTORA ALAM S.A.C"
+      },
+      {
+        "ruc": "20609275252",
+        "nombre": "ARQUITECNOLOGIA S.A.C."
+      },
+      {
+        "ruc": "10442706765",
+        "nombre": "QUISPE ATAYPOMA RAFAEL"
+      },
+      {
+        "ruc": "20600138899",
+        "nombre": "CONSTRUCTORA Y CONSULTORA ARGOS SOCIEDAD ANONIMA CERRADA"
+      }
+    ],
+    "num_postores": 49,
+    "ganador": null,
+    "monto_adjudicado": null,
+    "contrato": null,
+    "documentos": [
+      {
+        "titulo": "Pliego de absolución de consultas y observaciones",
+        "tipo": "clarifications",
+        "formato": "pdf",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=8a2d7e22-e7f5-44c4-8768-92191cf816c4",
+        "fecha": "2025-02-12T16:43:37-05:00"
+      },
+      {
+        "titulo": "Bases Integradas",
+        "tipo": "biddingDocuments",
+        "formato": "docx",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=dceeb22e-0ab0-43a9-9724-a30cb5a1743e",
+        "fecha": "2025-02-12T16:43:37-05:00"
+      },
+      {
+        "titulo": "Bases Administrativas",
+        "tipo": "biddingDocuments",
+        "formato": "docx",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=dd8b9714-4e84-48a2-9d0c-85e6c7e0f80f",
+        "fecha": "2024-12-05T12:50:00-05:00"
+      },
+      {
+        "titulo": "Resumen ejecutivo",
+        "tipo": "biddingDocuments",
+        "formato": "pdf",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=cbd79e7a-2604-41dc-9463-8f5e51b397d4",
+        "fecha": "2024-12-05T12:50:00-05:00"
+      },
+      {
+        "titulo": "Documentos de Presentación de Propuestas",
+        "tipo": "biddingDocuments",
+        "formato": "zip",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=38172e73-ca01-48c8-9e70-8918f8b2cf2f",
+        "fecha": "2025-03-10T17:04:56-05:00"
+      },
+      {
+        "titulo": "Documentos de Calificación y Evaluación",
+        "tipo": "evaluationReports",
+        "formato": "zip",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=263f78c3-778e-438e-a04a-ea962ebbe5fc",
+        "fecha": "2025-03-10T17:04:56-05:00"
+      },
+      {
+        "titulo": "Documentos de Otorgamiento de Buena Pro",
+        "tipo": "awardNotice",
+        "formato": "zip",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=8a5518e0-2a71-4a03-90de-c590021d68a1",
+        "fecha": "2025-03-10T17:04:56-05:00"
+      }
+    ],
+    "num_documentos": 7,
+    "fuente": "OCDS_API"
+  },
+  {
+    "ocid": "ocds-dgv273-seacev3-1086464",
+    "tender_id": "1086464",
+    "nomenclatura": "LP-SM-30-2024-ELSE-1",
+    "descripcion": "REMODELACIÓN DE RED PRIMARIA Y RED SECUNDARIA; EN EL(LA) LOS ALIMENTADORES CO-02, CO-05, SI-01, SI-03 DE LOS DISTRITOS DE SAN PABLO Y SICUANI DE LA PROVINCIA DE CANCHIS Y EL DISTRITO DE CUSIPATA, PROVINCIA QUISPICANCHI, DEPARTAMENTO CUSCO",
+    "tipo_procedimiento": "Licitación Pública",
+    "categoria": "works",
+    "valor_referencial": 9860501.48,
+    "moneda": "PEN",
+    "fecha_publicacion": "2024-12-17T10:27:00-05:00",
+    "cronograma": {
+      "convocatoria_inicio": "2024-12-17T00:00:00-05:00",
+      "convocatoria_fin": "2024-12-17T00:00:00-05:00",
+      "consultas_inicio": "2024-12-18T00:01:00-05:00",
+      "consultas_fin": "2025-01-09T23:59:00-05:00",
+      "buena_pro": "2025-02-14T00:00:00-05:00"
+    },
+    "entidad": {
+      "nombre": "EMPRESA REGIONAL DE SERVICIOS PUBLICOS DE ELECTRICIDAD DEL SUR ESTE S.A.",
+      "ruc": "20116544289",
+      "direccion": "MARISCAL SUCRE Nº 400 URB. BANCOPATA",
+      "departamento": "CUSCO",
+      "telefono": "953759805"
+    },
+    "postores": [
+      {
+        "ruc": "1641976",
+        "nombre": "CONSORCIO VALLE"
+      },
+      {
+        "ruc": "1642209",
+        "nombre": "CONSORCIO ALFA"
+      },
+      {
+        "ruc": "1642157",
+        "nombre": "CONSORCIO YACILA"
+      },
+      {
+        "ruc": "1641979",
+        "nombre": "CONSORCIO YANAORCCO"
+      },
+      {
+        "ruc": "1641960",
+        "nombre": "CONSORCIO PROSPECTIVA"
+      },
+      {
+        "ruc": "1642101",
+        "nombre": "CONSORCIO SAN ANTONIO"
+      },
+      {
+        "ruc": "1642264",
+        "nombre": "CONSORCIO EJECUTORES"
+      },
+      {
+        "ruc": "1642045",
+        "nombre": "CONSORCIO ADD"
+      },
+      {
+        "ruc": "1642125",
+        "nombre": "CONSORCIO HENAN"
+      },
+      {
+        "ruc": "20542822148",
+        "nombre": "A.U.R.A. CONTRATISTAS SOCIEDAD COMERCIAL DE RESPONSABILIDAD LIMITADA - A.U.R.A. CONTRATISTAS S.R.L."
+      },
+      {
+        "ruc": "20607212687",
+        "nombre": "TESLA ENERGY & POWER S.A.C."
+      },
+      {
+        "ruc": "20220199968",
+        "nombre": "INDUSTRIAS Y SERVICIOS ELECTRO-MECANICOS S.R.L."
+      },
+      {
+        "ruc": "20495973981",
+        "nombre": "PRIMSA SRL"
+      },
+      {
+        "ruc": "20606966106",
+        "nombre": "INGENIERIA, SERVICIOS AMBIENTALES Y MINEROS S.A.C."
+      },
+      {
+        "ruc": "10713175264",
+        "nombre": "GODIEL GALVEZ SOFIA ALEXANDRA"
+      },
+      {
+        "ruc": "20478158867",
+        "nombre": "ALKAPALKA  CONTRATISTAS  GENERALES  S.A.C."
+      },
+      {
+        "ruc": "20448297382",
+        "nombre": "GROUP PROYECT SOCIEDAD COMERCIAL DE RESPONSABILIDAD LIMITADA"
+      },
+      {
+        "ruc": "20171390614",
+        "nombre": "J.P. CONTRATISTAS GENERALES S.R.LTDA."
+      },
+      {
+        "ruc": "20527409838",
+        "nombre": "PROMELFA EIRL"
+      },
+      {
+        "ruc": "20357930201",
+        "nombre": "CRELOZ INGENIEROS S.R.LTDA"
+      },
+      {
+        "ruc": "20602867286",
+        "nombre": "HTCM ASESORES Y CONSTRUCTORES S.R.L - HTCM S.R.L"
+      },
+      {
+        "ruc": "20501788628",
+        "nombre": "DOVAS S.A.C."
+      },
+      {
+        "ruc": "20563967308",
+        "nombre": "ESCEL SOCIEDAD COMERCIAL DE RESPONSABILIDAD LIMITADA-ESCEL S.R.L."
+      },
+      {
+        "ruc": "20490348906",
+        "nombre": "CONSTRUCTORA CARDENAS & ALANYA EMPRESA INDIVIDUAL DE RESPONSABILIDAD LIMITADA - CONSTRUCTORA C & AL"
+      },
+      {
+        "ruc": "20527490937",
+        "nombre": "FINANCIERA Y CONSTRUCTORA PERU SOCIEDAD COMERCIAL DE RESPONSABILIDAD LIMITADA"
+      },
+      {
+        "ruc": "20608635581",
+        "nombre": "REFLOC E.I.R.L."
+      },
+      {
+        "ruc": "20600376196",
+        "nombre": "INGENIERIA Y SERVICIOS CALIFICADOS SOCIEDAD ANONIMA CERRADA - INSERCAL S.A.C."
+      },
+      {
+        "ruc": "20527814261",
+        "nombre": "ORION CONTRATISTAS Y CONSULTORES SOCIEDAD ANÓNIMA CERRADA- ORION SAC"
+      },
+      {
+        "ruc": "20601016347",
+        "nombre": "ALTICA CONSTRUCCIONES S.R.L."
+      },
+      {
+        "ruc": "20511403627",
+        "nombre": "ZAVATEC SA"
+      },
+      {
+        "ruc": "20527760071",
+        "nombre": "ANKA E.I.R.L"
+      },
+      {
+        "ruc": "20450632598",
+        "nombre": "HYDROGEN  ENERGY PERU SOCIEDAD ANONIMA"
+      },
+      {
+        "ruc": "20519627371",
+        "nombre": "SANESOL INGENIEROS SOCIEDAD COMERCIAL DE RESPONSABILIDAD LIMITADA"
+      },
+      {
+        "ruc": "20602470114",
+        "nombre": "\"CONSTRUCTORA ALMINA E.I.R.L.\""
+      },
+      {
+        "ruc": "20528036164",
+        "nombre": "CONSTRUCTORA YANAORCCO EMPRESA INDIVIDUAL DE RESPONSABILIDAD LIMITADA"
+      },
+      {
+        "ruc": "20604833681",
+        "nombre": "JSG CONSTRUCTORES S.A.C."
+      },
+      {
+        "ruc": "20608231685",
+        "nombre": "CRG INGENIEROS E.I.R.L."
+      },
+      {
+        "ruc": "20603425104",
+        "nombre": "TECNICAS DE INGENIERIA Y CONTRATOS S.A.C. - TEINGECON S.A.C."
+      },
+      {
+        "ruc": "20274419637",
+        "nombre": "J.C.A. CONTRATISTAS GENERALES S.R.LTDA."
+      },
+      {
+        "ruc": "20489466741",
+        "nombre": "INVERSIONES HILARIO S.A.C."
+      },
+      {
+        "ruc": "10238833561",
+        "nombre": "CALLALLI CAITUIRO IRMA VIOLETA"
+      },
+      {
+        "ruc": "20365809179",
+        "nombre": "EL HORIZONTE S.R.L."
+      },
+      {
+        "ruc": "20482444912",
+        "nombre": "SOLUCIONES EN CONTROL INDUSTRIAL Y DE PROCESOS S.A.C. - SCIP S.A.C."
+      },
+      {
+        "ruc": "10295936318",
+        "nombre": "HERRERA ORE PALERMO"
+      },
+      {
+        "ruc": "20119916705",
+        "nombre": "IMELEC S.R.L."
+      },
+      {
+        "ruc": "20227508109",
+        "nombre": "ELECTRIC SERVIS L P E I R LTDA"
+      },
+      {
+        "ruc": "20550297176",
+        "nombre": "INGENIERÍA DE LA CONSTRUCCIÓN HDH S.A.C. - IC HDH S.A.C."
+      },
+      {
+        "ruc": "20447932882",
+        "nombre": "COCO INGENIEROS CONSULTORES Y CONTRATISTAS GENERALES SOCIEDAD ANONIMA CERRADA"
+      },
+      {
+        "ruc": "10411550996",
+        "nombre": "LARICO POMA MIDUAR"
+      }
+    ],
+    "num_postores": 49,
+    "ganador": {
+      "ruc": "20447932882",
+      "nombre": "COCO INGENIEROS CONSULTORES Y CONTRATISTAS GENERALES SOCIEDAD ANONIMA CERRADA"
+    },
+    "monto_adjudicado": 8874451.35,
+    "contrato": null,
+    "documentos": [
+      {
+        "titulo": "Bases Administrativas",
+        "tipo": "biddingDocuments",
+        "formato": "docx",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=b9dea66d-f4f7-4d79-923c-f040b46edfb3",
+        "fecha": "2024-12-17T10:27:00-05:00"
+      },
+      {
+        "titulo": "Resumen ejecutivo",
+        "tipo": "biddingDocuments",
+        "formato": "pdf",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=22020a15-606a-49a8-8bc3-5691737ba6b1",
+        "fecha": "2024-12-17T10:27:00-05:00"
+      },
+      {
+        "titulo": "Pliego de absolución de consultas y observaciones",
+        "tipo": "clarifications",
+        "formato": "pdf",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=6eb5dd2b-f32a-41d0-9dc5-4c86068e6ba2",
+        "fecha": "2025-01-22T16:00:13-05:00"
+      },
+      {
+        "titulo": "Bases Integradas",
+        "tipo": "biddingDocuments",
+        "formato": "docx",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=25b1f727-e945-49b3-8a8d-ce6521cddb38",
+        "fecha": "2025-01-22T16:00:13-05:00"
+      },
+      {
+        "titulo": "Documentos de Presentación de Propuestas",
+        "tipo": "biddingDocuments",
+        "formato": "zip",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=c12685a3-c0b2-42fd-b5c0-24078d5ddda9",
+        "fecha": "2025-02-14T17:42:13-05:00"
+      },
+      {
+        "titulo": "Documentos de Calificación y Evaluación",
+        "tipo": "evaluationReports",
+        "formato": "zip",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=802e179d-66ed-45a1-b488-6c10fd45b8a2",
+        "fecha": "2025-02-14T17:42:13-05:00"
+      },
+      {
+        "titulo": "Documentos de Otorgamiento de Buena Pro",
+        "tipo": "awardNotice",
+        "formato": "zip",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=47acea67-6921-4bef-abdb-ab9f2d65c8a2",
+        "fecha": "2025-02-14T17:42:14-05:00"
+      }
+    ],
+    "num_documentos": 7,
+    "fuente": "OCDS_API"
+  },
+  {
+    "ocid": "ocds-dgv273-seacev3-1086143",
+    "tender_id": "1086143",
+    "nomenclatura": "LP-SM-7-2024-ELSE-1",
+    "descripcion": "CONSTRUCCIÓN DE LÍNEA PRIMARIA; RENOVACIÓN DE RED PRIMARIA; EN EL(LA) LOS ALIMENTADORES CP03 Y AN04 CON INTERCONEXIÓN DESDE QUEROBAMBA HASTA PALLCCA EN LA PROVINCIA DE SUCRE DEPARTAMENTO DE AYACUCHO Y LA PROVINCIA DE ANDAHUAYLAS, DISTRITO DE SORAYA, PROVINCIA AYMARAES, DEPARTAMENTO APURÍMAC",
+    "tipo_procedimiento": "Licitación Pública",
+    "categoria": "works",
+    "valor_referencial": 11986965.95,
+    "moneda": "PEN",
+    "fecha_publicacion": "2024-12-12T11:33:00-05:00",
+    "cronograma": {
+      "convocatoria_inicio": "2024-12-12T00:00:00-05:00",
+      "convocatoria_fin": "2024-12-12T00:00:00-05:00",
+      "consultas_inicio": "2024-12-13T00:01:00-05:00",
+      "consultas_fin": "2025-01-03T23:59:00-05:00",
+      "buena_pro": null
+    },
+    "entidad": {
+      "nombre": "EMPRESA REGIONAL DE SERVICIOS PUBLICOS DE ELECTRICIDAD DEL SUR ESTE S.A.",
+      "ruc": "20116544289",
+      "direccion": "MARISCAL SUCRE Nº 400 URB. BANCOPATA",
+      "departamento": "CUSCO",
+      "telefono": "953759805"
+    },
+    "postores": [],
+    "num_postores": 0,
+    "ganador": null,
+    "monto_adjudicado": null,
+    "contrato": null,
+    "documentos": [
+      {
+        "titulo": "Bases Administrativas",
+        "tipo": "biddingDocuments",
+        "formato": "docx",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=5d8fe07a-0b20-420b-911b-a1dc460df1fc",
+        "fecha": "2024-12-12T11:33:00-05:00"
+      },
+      {
+        "titulo": "Resumen ejecutivo",
+        "tipo": "biddingDocuments",
+        "formato": "pdf",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=004267a9-23f7-4ca5-a7ad-222483f0c427",
+        "fecha": "2024-12-12T11:33:00-05:00"
+      },
+      {
+        "titulo": "Pliego de absolución de consultas y observaciones",
+        "tipo": "clarifications",
+        "formato": "pdf",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=c5b820aa-caa2-49dd-9ee6-37ea50d0a481",
+        "fecha": "2025-01-17T16:50:45-05:00"
+      },
+      {
+        "titulo": "Bases Integradas",
+        "tipo": "biddingDocuments",
+        "formato": "docx",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=ee0977c9-f5cc-4520-834b-7b605516d305",
+        "fecha": "2025-01-17T16:50:46-05:00"
+      }
+    ],
+    "num_documentos": 4,
+    "fuente": "OCDS_API"
+  },
+  {
+    "ocid": "ocds-dgv273-seacev3-2024-2407-177",
+    "tender_id": "1084108",
+    "nomenclatura": "CP-SM-71-2024-ELSE-1",
+    "descripcion": "SERVICIO DE INVENTARIO DE DOCUMENTOS ARCHIVÍSTICOS CUSCO",
+    "tipo_procedimiento": "Concurso Público",
+    "categoria": "services",
+    "valor_referencial": 790796.16,
+    "moneda": "PEN",
+    "fecha_publicacion": "2024-12-27T18:12:00-05:00",
+    "cronograma": {
+      "convocatoria_inicio": "2024-12-27T00:00:00-05:00",
+      "convocatoria_fin": "2024-12-27T00:00:00-05:00",
+      "consultas_inicio": "2024-12-28T00:01:00-05:00",
+      "consultas_fin": "2025-01-16T23:59:00-05:00",
+      "buena_pro": "2025-03-03T00:00:00-05:00"
+    },
+    "entidad": {
+      "nombre": "EMPRESA REGIONAL DE SERVICIOS PUBLICOS DE ELECTRICIDAD DEL SUR ESTE S.A.",
+      "ruc": "20116544289",
+      "direccion": "MARISCAL SUCRE Nº 400 URB. BANCOPATA",
+      "departamento": "CUSCO",
+      "telefono": "953759805"
+    },
+    "postores": [
+      {
+        "ruc": "20612949809",
+        "nombre": "INGENIEROS SUPERVISORES A & E SOCIEDAD ANONIMA CERRADA"
+      },
+      {
+        "ruc": "20606966106",
+        "nombre": "INGENIERIA, SERVICIOS AMBIENTALES Y MINEROS S.A.C."
+      },
+      {
+        "ruc": "20490024086",
+        "nombre": "INREHGE S.R.L."
+      },
+      {
+        "ruc": "20386255866",
+        "nombre": "CONSTRUCTION & MAINT.ENGINEERING S.A.C."
+      },
+      {
+        "ruc": "20613396161",
+        "nombre": "ASAM INGENIEROS S.A.C."
+      },
+      {
+        "ruc": "20553591644",
+        "nombre": "J Y M ARCHIVISTICA INTEGRADA E.I.R.L."
+      },
+      {
+        "ruc": "20602309275",
+        "nombre": "HABIAS DATA INGENIERIA Y TELECOMUNICACIONES EMPRESA INDIVIDUAL DE RESPONSABILIDAD LIMITADA"
+      },
+      {
+        "ruc": "10154157391",
+        "nombre": "MANCO CUYA LUIS ENRIQUE"
+      },
+      {
+        "ruc": "20604833681",
+        "nombre": "JSG CONSTRUCTORES S.A.C."
+      },
+      {
+        "ruc": "20608231685",
+        "nombre": "CRG INGENIEROS E.I.R.L."
+      },
+      {
+        "ruc": "20603425104",
+        "nombre": "TECNICAS DE INGENIERIA Y CONTRATOS S.A.C. - TEINGECON S.A.C."
+      },
+      {
+        "ruc": "20603567472",
+        "nombre": "J & J INCAR S.A.C."
+      },
+      {
+        "ruc": "20274419637",
+        "nombre": "J.C.A. CONTRATISTAS GENERALES S.R.LTDA."
+      },
+      {
+        "ruc": "20550097835",
+        "nombre": "ALFARO SALAS Y ASOCIADOS S.A.C."
+      },
+      {
+        "ruc": "20603454384",
+        "nombre": "SERVICIOS ARCHIVISTICOS GENERALES EMPRESA INDIVIDUAL DE RESPONSABILIDAD LIMITADA"
+      },
+      {
+        "ruc": "20600595963",
+        "nombre": "GRUPO VCM S.A.C."
+      },
+      {
+        "ruc": "20609701383",
+        "nombre": "OUTSOURCING CONTABLE MIZA S.A.C."
+      },
+      {
+        "ruc": "20484426687",
+        "nombre": "SOPTEC GLOBAL SOCIEDAD ANONIMA CERRADA - SOPTEC GLOBAL S.A.C."
+      },
+      {
+        "ruc": "20184662796",
+        "nombre": "PT & J SOLUCIONES EMPRESARIALES S.A.C."
+      },
+      {
+        "ruc": "20602092233",
+        "nombre": "CARBAO S.A.C."
+      },
+      {
+        "ruc": "20537332124",
+        "nombre": "HANKKO CONSULTORES S.A.C"
+      },
+      {
+        "ruc": "20450632598",
+        "nombre": "HYDROGEN  ENERGY PERU SOCIEDAD ANONIMA"
+      },
+      {
+        "ruc": "20609566877",
+        "nombre": "GESTION EN PROCESO LOGISTICO Y DOCUMENTARIO S.A.C."
+      },
+      {
+        "ruc": "20568977719",
+        "nombre": "MAFALE E.I.R.L."
+      },
+      {
+        "ruc": "20601328039",
+        "nombre": "TECHNICAL ENGINEERING SOLUTIONS S.A.C."
+      },
+      {
+        "ruc": "20602024319",
+        "nombre": "CORPORATIVO RASA S.A.C."
+      },
+      {
+        "ruc": "10422087279",
+        "nombre": "REJAS UNTIVEROS ALFREDO ORLANDO"
+      },
+      {
+        "ruc": "20601310695",
+        "nombre": "SERVICIOS DE ARCHIVOS FISICOS Y DIGITALES S.A.C."
+      },
+      {
+        "ruc": "10418113907",
+        "nombre": "MAXIMILIANO CABELLO ARTURO SEVERO"
+      },
+      {
+        "ruc": "20602560351",
+        "nombre": "GESTION DOCUMENTAL CERESP S.A.C."
+      }
+    ],
+    "num_postores": 30,
+    "ganador": {
+      "ruc": "20602560351",
+      "nombre": "GESTION DOCUMENTAL CERESP S.A.C."
+    },
+    "monto_adjudicado": 688814.28,
+    "contrato": {
+      "numero": "057-2025",
+      "monto": 688814.28,
+      "fecha_firma": "2025-04-04T00:00:00-05:00",
+      "inicio": "2025-04-07T00:00:00-05:00",
+      "fin": "2026-05-30T00:00:00-05:00",
+      "duracion_dias": 418
+    },
+    "documentos": [
+      {
+        "titulo": "Bases Administrativas",
+        "tipo": "biddingDocuments",
+        "formato": "docx",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=8a9c2eb8-8a77-4c4f-9cb0-5ae73257978f",
+        "fecha": "2024-12-27T18:12:00-05:00"
+      },
+      {
+        "titulo": "Resumen ejecutivo",
+        "tipo": "biddingDocuments",
+        "formato": "pdf",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=b4e25803-87c1-4b7f-9a49-2f42e17c6510",
+        "fecha": "2024-12-27T18:12:00-05:00"
+      },
+      {
+        "titulo": "Pliego de absolución de consultas y observaciones",
+        "tipo": "clarifications",
+        "formato": "pdf",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=11b1e3af-986a-4527-9e4e-d3e4805da4df",
+        "fecha": "2025-01-22T17:33:23-05:00"
+      },
+      {
+        "titulo": "Bases Integradas",
+        "tipo": "biddingDocuments",
+        "formato": "docx",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=ff3e1eca-147b-425e-89c6-0065da0cee09",
+        "fecha": "2025-01-22T17:33:23-05:00"
+      },
+      {
+        "titulo": "Documentos de Presentación de Propuestas",
+        "tipo": "biddingDocuments",
+        "formato": "zip",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=e5254ed2-a5aa-470f-b807-6398fdcc3878",
+        "fecha": "2025-03-03T15:42:52-05:00"
+      },
+      {
+        "titulo": "Documentos de Calificación y Evaluación",
+        "tipo": "evaluationReports",
+        "formato": "zip",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=477aa27b-2631-4ec0-93ab-d0d3274aec60",
+        "fecha": "2025-03-03T15:42:53-05:00"
+      },
+      {
+        "titulo": "Documentos de Otorgamiento de Buena Pro",
+        "tipo": "awardNotice",
+        "formato": "zip",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=f8bcd7fd-719a-4006-9ca3-506a968fa3bc",
+        "fecha": "2025-03-03T15:42:53-05:00"
+      },
+      {
+        "titulo": "Archivos del contrato",
+        "tipo": "contractSigned",
+        "url": "https://prod4.seace.gob.pe:9000/api/con/documentos/descargar/152822445",
+        "fecha": "2025-04-07T09:38:50-05:00"
+      }
+    ],
+    "num_documentos": 8,
+    "fuente": "OCDS_API"
+  },
+  {
+    "ocid": "ocds-dgv273-seacev3-2024-2407-24",
+    "tender_id": "1083981",
+    "nomenclatura": "CP-SM-4-2024-ELSE-1",
+    "descripcion": "SERVICIOS COMERCIALES LA CONVENCIÓN 2024 -2025",
+    "tipo_procedimiento": "Concurso Público",
+    "categoria": "services",
+    "valor_referencial": 7662333.65,
+    "moneda": "PEN",
+    "fecha_publicacion": "2024-12-27T15:28:00-05:00",
+    "cronograma": {
+      "convocatoria_inicio": "2024-12-27T00:00:00-05:00",
+      "convocatoria_fin": "2024-12-27T00:00:00-05:00",
+      "consultas_inicio": "2024-12-28T00:01:00-05:00",
+      "consultas_fin": "2025-01-17T23:59:00-05:00",
+      "buena_pro": "2025-02-18T00:00:00-05:00"
+    },
+    "entidad": {
+      "nombre": "EMPRESA REGIONAL DE SERVICIOS PUBLICOS DE ELECTRICIDAD DEL SUR ESTE S.A.",
+      "ruc": "20116544289",
+      "direccion": "MARISCAL SUCRE Nº 400 URB. BANCOPATA",
+      "departamento": "CUSCO",
+      "telefono": "953759805"
+    },
+    "postores": [
+      {
+        "ruc": "1643130",
+        "nombre": "CONSORCIO ILLAPAY"
+      },
+      {
+        "ruc": "1643383",
+        "nombre": "CONSORCIO SAR"
+      },
+      {
+        "ruc": "1643402",
+        "nombre": "LACEG"
+      },
+      {
+        "ruc": "20490024086",
+        "nombre": "INREHGE S.R.L."
+      },
+      {
+        "ruc": "20608231685",
+        "nombre": "CRG INGENIEROS E.I.R.L."
+      },
+      {
+        "ruc": "20274419637",
+        "nombre": "J.C.A. CONTRATISTAS GENERALES S.R.LTDA."
+      },
+      {
+        "ruc": "20604833681",
+        "nombre": "JSG CONSTRUCTORES S.A.C."
+      },
+      {
+        "ruc": "10422895391",
+        "nombre": "ASTETE VERDE CRISTIAN NICOLAS"
+      },
+      {
+        "ruc": "20603425104",
+        "nombre": "TECNICAS DE INGENIERIA Y CONTRATOS S.A.C. - TEINGECON S.A.C."
+      },
+      {
+        "ruc": "20603359411",
+        "nombre": "EZETA ELECTRIC E.I.R.L."
+      },
+      {
+        "ruc": "20564533778",
+        "nombre": "SERVICIOS ELECTRICOS Y CONSTRUCCION EMPRESA INDIVIDUAL DE RESPONSABILIDAD LIMITADA-SELYCON E.I.R.L."
+      },
+      {
+        "ruc": "20610087532",
+        "nombre": "TENSOR E.I.R.L."
+      },
+      {
+        "ruc": "20613396161",
+        "nombre": "ASAM INGENIEROS S.A.C."
+      },
+      {
+        "ruc": "10247039673",
+        "nombre": "CURO APAZA RUTH"
+      },
+      {
+        "ruc": "20442346292",
+        "nombre": "ARAC CONTRATISTAS GENERALES S.R.L."
+      },
+      {
+        "ruc": "20399954682",
+        "nombre": "PROCIEL S.R.LTDA"
+      },
+      {
+        "ruc": "20528168231",
+        "nombre": "SERVICIOS MULTIPLES ARIES S.R.L."
+      },
+      {
+        "ruc": "20606966106",
+        "nombre": "INGENIERIA, SERVICIOS AMBIENTALES Y MINEROS S.A.C."
+      },
+      {
+        "ruc": "20601505321",
+        "nombre": "INVERSIONES Y CONTRATISTAS GUADALUPE EMPRESA INDIVIDUAL DE RESPONSABILIDAD LIMITADA"
+      },
+      {
+        "ruc": "20490992406",
+        "nombre": "SAR SERVIS SAC"
+      },
+      {
+        "ruc": "20450632598",
+        "nombre": "HYDROGEN  ENERGY PERU SOCIEDAD ANONIMA"
+      },
+      {
+        "ruc": "20386255866",
+        "nombre": "CONSTRUCTION & MAINT.ENGINEERING S.A.C."
+      },
+      {
+        "ruc": "20603914920",
+        "nombre": "ROMAGUS INGENIEROS E.I.R.L."
+      },
+      {
+        "ruc": "20527180822",
+        "nombre": "ICEMA CONTRATISTAS GENERALES S.C.R.L"
+      }
+    ],
+    "num_postores": 24,
+    "ganador": {
+      "ruc": "1643383",
+      "nombre": "CONSORCIO SAR"
+    },
+    "monto_adjudicado": 7440414.0,
+    "contrato": null,
+    "documentos": [
+      {
+        "titulo": "Bases Administrativas",
+        "tipo": "biddingDocuments",
+        "formato": "docx",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=8c120686-3f42-4e1a-bba0-771a81ef1cb0",
+        "fecha": "2024-12-27T15:28:00-05:00"
+      },
+      {
+        "titulo": "Resumen ejecutivo",
+        "tipo": "biddingDocuments",
+        "formato": "pdf",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=68023a59-1ee5-4bae-9bb3-7ac2f028bb07",
+        "fecha": "2024-12-27T15:28:00-05:00"
+      },
+      {
+        "titulo": "Pliego de absolución de consultas y observaciones",
+        "tipo": "clarifications",
+        "formato": "pdf",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=5413c3a2-1e7b-4627-b18d-bed5f27044b5",
+        "fecha": "2025-01-24T17:39:14-05:00"
+      },
+      {
+        "titulo": "Bases Integradas",
+        "tipo": "biddingDocuments",
+        "formato": "docx",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=f4cd3f1e-cbf7-4c42-a287-d9825c4372f6",
+        "fecha": "2025-01-24T17:39:14-05:00"
+      },
+      {
+        "titulo": "Documentos de Presentación de Propuestas",
+        "tipo": "biddingDocuments",
+        "formato": "zip",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=17b09f68-60c5-4519-830f-8a98012e9d5d",
+        "fecha": "2025-02-18T19:02:29-05:00"
+      },
+      {
+        "titulo": "Documentos de Calificación y Evaluación",
+        "tipo": "evaluationReports",
+        "formato": "zip",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=48d036cf-1107-49e6-8987-80349d8835a3",
+        "fecha": "2025-02-18T19:02:29-05:00"
+      },
+      {
+        "titulo": "Documentos de Otorgamiento de Buena Pro",
+        "tipo": "awardNotice",
+        "formato": "zip",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=4f130477-c2fb-415e-bb59-920dcf4df590",
+        "fecha": "2025-02-18T19:02:29-05:00"
+      }
+    ],
+    "num_documentos": 7,
+    "fuente": "OCDS_API"
+  },
+  {
+    "ocid": "ocds-dgv273-seacev3-2024-2407-176",
+    "tender_id": "1083844",
+    "nomenclatura": "CP-SM-73-2024-ELSE-1",
+    "descripcion": "SUPERVISIÓN DE LA OBRA: ¿CONSTRUCCIÓN DE LÍNEA PRIMARIA; RENOVACIÓN DE RED PRIMARIA; EN EL(LA) LOS ALIMENTADORES CP03 Y AN04 CON INTERCONEXIÓN DESDE QUEROBAMBA HASTA PALLCCA EN LA PROVINCIA DE SUCRE DEPARTAMENTO DE AYACUCHO Y LA PROVINCIA DE ANDAHUAYLAS, DISTRITO DE SORAYA, PROVINCIA AYMARAES, DEPARTAMENTO APURÍMAC",
+    "tipo_procedimiento": "Concurso Público",
+    "categoria": "services",
+    "valor_referencial": 499592.66,
+    "moneda": "PEN",
+    "fecha_publicacion": "2024-12-27T14:30:00-05:00",
+    "cronograma": {
+      "convocatoria_inicio": "2024-12-27T00:00:00-05:00",
+      "convocatoria_fin": "2024-12-27T00:00:00-05:00",
+      "consultas_inicio": "2024-12-28T00:01:00-05:00",
+      "consultas_fin": "2025-01-15T23:59:00-05:00",
+      "buena_pro": null
+    },
+    "entidad": {
+      "nombre": "EMPRESA REGIONAL DE SERVICIOS PUBLICOS DE ELECTRICIDAD DEL SUR ESTE S.A.",
+      "ruc": "20116544289",
+      "direccion": "MARISCAL SUCRE Nº 400 URB. BANCOPATA",
+      "departamento": "CUSCO",
+      "telefono": "953759805"
+    },
+    "postores": [],
+    "num_postores": 0,
+    "ganador": null,
+    "monto_adjudicado": null,
+    "contrato": null,
+    "documentos": [
+      {
+        "titulo": "Bases Administrativas",
+        "tipo": "biddingDocuments",
+        "formato": "docx",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=aa67426e-912b-466b-b505-e4b42d504601",
+        "fecha": "2024-12-27T14:30:00-05:00"
+      },
+      {
+        "titulo": "Resumen ejecutivo",
+        "tipo": "biddingDocuments",
+        "formato": "pdf",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=e1077ffb-3595-43df-92b9-c40c6a6e85c8",
+        "fecha": "2024-12-27T14:30:00-05:00"
+      },
+      {
+        "titulo": "Pliego de absolución de consultas y observaciones",
+        "tipo": "clarifications",
+        "formato": "pdf",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=32a5c5d2-9b78-4057-87f0-29afed3d8b45",
+        "fecha": "2025-01-21T15:55:39-05:00"
+      },
+      {
+        "titulo": "Bases Integradas",
+        "tipo": "biddingDocuments",
+        "formato": "docx",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=daa112b9-7e86-44cf-8791-92b24c77d102",
+        "fecha": "2025-01-21T15:55:39-05:00"
+      }
+    ],
+    "num_documentos": 4,
+    "fuente": "OCDS_API"
+  },
+  {
+    "ocid": "ocds-dgv273-seacev3-2024-2407-180",
+    "tender_id": "1083807",
+    "nomenclatura": "CP-SM-76-2024-ELSE-1",
+    "descripcion": "SUPERVISION DE OBRA ¿REMODELACIÓN DE RED PRIMARIA Y RED SECUNDARIA; EN EL(LA) LOS ALIMENTADORES UR01, PI01 EN LOS DISTRITOS DE HUAYLLABAMBA Y MARAS DE LA PROVINCIA DE URUBAMBA Y EL DISTRITO DE TARAY, PROVINCIA CALCA, DEPARTAMENTO CUSCO",
+    "tipo_procedimiento": "Concurso Público",
+    "categoria": "services",
+    "valor_referencial": 514669.72,
+    "moneda": "PEN",
+    "fecha_publicacion": "2024-12-27T12:33:00-05:00",
+    "cronograma": {
+      "convocatoria_inicio": "2024-12-27T00:00:00-05:00",
+      "convocatoria_fin": "2024-12-27T00:00:00-05:00",
+      "consultas_inicio": "2024-12-28T00:01:00-05:00",
+      "consultas_fin": "2025-01-15T23:59:00-05:00",
+      "buena_pro": null
+    },
+    "entidad": {
+      "nombre": "EMPRESA REGIONAL DE SERVICIOS PUBLICOS DE ELECTRICIDAD DEL SUR ESTE S.A.",
+      "ruc": "20116544289",
+      "direccion": "MARISCAL SUCRE Nº 400 URB. BANCOPATA",
+      "departamento": "CUSCO",
+      "telefono": "953759805"
+    },
+    "postores": [],
+    "num_postores": 0,
+    "ganador": null,
+    "monto_adjudicado": null,
+    "contrato": null,
+    "documentos": [
+      {
+        "titulo": "Bases Administrativas",
+        "tipo": "biddingDocuments",
+        "formato": "docx",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=3627f166-24b6-494a-af6c-a7bf92d5096c",
+        "fecha": "2024-12-27T12:33:00-05:00"
+      },
+      {
+        "titulo": "Resumen ejecutivo",
+        "tipo": "biddingDocuments",
+        "formato": "pdf",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=fece4759-6052-4320-93dd-1b6fa0977ee4",
+        "fecha": "2024-12-27T12:33:00-05:00"
+      },
+      {
+        "titulo": "Pliego de absolución de consultas y observaciones",
+        "tipo": "clarifications",
+        "formato": "pdf",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=bfc7fb89-8912-4bf6-abb3-da49bd16d759",
+        "fecha": "2025-01-21T17:03:29-05:00"
+      },
+      {
+        "titulo": "Bases Integradas",
+        "tipo": "biddingDocuments",
+        "formato": "docx",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=aa709172-e301-4b3d-ae6f-f5a506c9f14d",
+        "fecha": "2025-01-21T17:03:30-05:00"
+      }
+    ],
+    "num_documentos": 4,
+    "fuente": "OCDS_API"
+  },
+  {
+    "ocid": "ocds-dgv273-seacev3-2024-2407-179",
+    "tender_id": "1083761",
+    "nomenclatura": "CP-SM-75-2024-ELSE-1",
+    "descripcion": "SUPERVISIÓN DE OBRA: AMPLIACIÓN DEL SERVICIO DE SUMINISTRO ELÉCTRICO DOMICILIARIO EN ZONAS RURALES EN 5 UNIDADES PRODUCTORAS 5 DISTRITOS DE 4 PROVINCIAS DEL DEPARTAMENTO DE CUSCO",
+    "tipo_procedimiento": "Concurso Público",
+    "categoria": "services",
+    "valor_referencial": 583139.92,
+    "moneda": "PEN",
+    "fecha_publicacion": "2024-12-27T12:05:00-05:00",
+    "cronograma": {
+      "convocatoria_inicio": "2024-12-27T00:00:00-05:00",
+      "convocatoria_fin": "2024-12-27T00:00:00-05:00",
+      "consultas_inicio": "2024-12-28T00:01:00-05:00",
+      "consultas_fin": "2025-01-15T23:59:00-05:00",
+      "buena_pro": null
+    },
+    "entidad": {
+      "nombre": "EMPRESA REGIONAL DE SERVICIOS PUBLICOS DE ELECTRICIDAD DEL SUR ESTE S.A.",
+      "ruc": "20116544289",
+      "direccion": "MARISCAL SUCRE Nº 400 URB. BANCOPATA",
+      "departamento": "CUSCO",
+      "telefono": "953759805"
+    },
+    "postores": [],
+    "num_postores": 0,
+    "ganador": null,
+    "monto_adjudicado": null,
+    "contrato": null,
+    "documentos": [
+      {
+        "titulo": "Bases Administrativas",
+        "tipo": "biddingDocuments",
+        "formato": "docx",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=f54f7576-c4ac-474e-9a3f-7653e05c8e2b",
+        "fecha": "2024-12-27T12:05:00-05:00"
+      },
+      {
+        "titulo": "Resumen ejecutivo",
+        "tipo": "biddingDocuments",
+        "formato": "pdf",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=ac29927c-b16e-4b1b-b8c6-88a7c3b76ede",
+        "fecha": "2024-12-27T12:05:00-05:00"
+      },
+      {
+        "titulo": "Pliego de absolución de consultas y observaciones",
+        "tipo": "clarifications",
+        "formato": "pdf",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=69a74b90-8705-49fa-8549-4121b677217f",
+        "fecha": "2025-01-21T16:56:11-05:00"
+      },
+      {
+        "titulo": "Bases Integradas",
+        "tipo": "biddingDocuments",
+        "formato": "docx",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=5305afdb-e13a-494b-8779-94c81577f286",
+        "fecha": "2025-01-21T16:56:11-05:00"
+      }
+    ],
+    "num_documentos": 4,
+    "fuente": "OCDS_API"
+  },
+  {
+    "ocid": "ocds-dgv273-seacev3-2024-2407-178",
+    "tender_id": "1083626",
+    "nomenclatura": "LP-SM-31-2024-ELSE-1",
+    "descripcion": "AMPLIACIÓN DEL SERVICIO DE SUMINISTRO ELÉCTRICO DOMICILIARIO EN ZONAS RURALES EN 5 UNIDADES PRODUCTORAS 5 DISTRITOS DE 4 PROVINCIAS DEL DEPARTAMENTO DE CUSCO",
+    "tipo_procedimiento": "Licitación Pública",
+    "categoria": "works",
+    "valor_referencial": 6450688.82,
+    "moneda": "PEN",
+    "fecha_publicacion": "2024-12-27T10:40:00-05:00",
+    "cronograma": {
+      "convocatoria_inicio": "2024-12-27T00:00:00-05:00",
+      "convocatoria_fin": "2024-12-27T00:00:00-05:00",
+      "consultas_inicio": "2024-12-28T00:01:00-05:00",
+      "consultas_fin": "2025-01-15T23:59:00-05:00",
+      "buena_pro": "2025-02-25T00:00:00-05:00"
+    },
+    "entidad": {
+      "nombre": "EMPRESA REGIONAL DE SERVICIOS PUBLICOS DE ELECTRICIDAD DEL SUR ESTE S.A.",
+      "ruc": "20116544289",
+      "direccion": "MARISCAL SUCRE Nº 400 URB. BANCOPATA",
+      "departamento": "CUSCO",
+      "telefono": "953759805"
+    },
+    "postores": [
+      {
+        "ruc": "1643898",
+        "nombre": "CONSORCIO YANAORCCO"
+      },
+      {
+        "ruc": "1644219",
+        "nombre": "CONSORCIO SAN ANTONIO"
+      },
+      {
+        "ruc": "1643843",
+        "nombre": "CONSORCIO A&R"
+      },
+      {
+        "ruc": "1644103",
+        "nombre": "CONSORCIO COINGRED"
+      },
+      {
+        "ruc": "1643918",
+        "nombre": "CONSORCIO ESTANCIA"
+      },
+      {
+        "ruc": "1643919",
+        "nombre": "CONSORCIO BASADRE"
+      },
+      {
+        "ruc": "1644001",
+        "nombre": "CONSORCIO SAGITARIO"
+      },
+      {
+        "ruc": "1644039",
+        "nombre": "CONSOCIO SEÑOR DE LOS MILAGROS"
+      },
+      {
+        "ruc": "1644085",
+        "nombre": "CONSORCIO HENAN"
+      },
+      {
+        "ruc": "1644083",
+        "nombre": "CONSORCIO ADD"
+      },
+      {
+        "ruc": "1644159",
+        "nombre": "CONSORCIO EJECUTORES"
+      },
+      {
+        "ruc": "1644204",
+        "nombre": "CONSORCIO PACHACUTEC"
+      },
+      {
+        "ruc": "20136318323",
+        "nombre": "SERVICIOS TECNICOS COMERCIALES SA"
+      },
+      {
+        "ruc": "20542822148",
+        "nombre": "A.U.R.A. CONTRATISTAS SOCIEDAD COMERCIAL DE RESPONSABILIDAD LIMITADA - A.U.R.A. CONTRATISTAS S.R.L."
+      },
+      {
+        "ruc": "10411550996",
+        "nombre": "LARICO POMA MIDUAR"
+      },
+      {
+        "ruc": "20600189159",
+        "nombre": "SMART NET S.A."
+      },
+      {
+        "ruc": "20609317141",
+        "nombre": "PREMARC CONTRATISTAS GENERALES S.A.C."
+      },
+      {
+        "ruc": "20495973981",
+        "nombre": "PRIMSA SRL"
+      },
+      {
+        "ruc": "20606966106",
+        "nombre": "INGENIERIA, SERVICIOS AMBIENTALES Y MINEROS S.A.C."
+      },
+      {
+        "ruc": "20550934079",
+        "nombre": "PRECYSSA CONTRATISTAS GENERALES S.A.C."
+      },
+      {
+        "ruc": "10713175264",
+        "nombre": "GODIEL GALVEZ SOFIA ALEXANDRA"
+      },
+      {
+        "ruc": "20119901180",
+        "nombre": "COING CONTRATISTAS GENERALES S.C.R.LTDA."
+      },
+      {
+        "ruc": "20490199048",
+        "nombre": "P Y G PROYECTOS Y CONTRATOS SOCIEDAD COMERCIAL DE RESPONSABILIDAD LIMITADA - P Y G PROYECTOS SRL."
+      },
+      {
+        "ruc": "20490536907",
+        "nombre": "KS PROYECTOS E INVERSIONES EMPRESA INDIVIDUAL DE RESPONSABILIDAD LIMITADA-KS PROYECTOS E.I.R.L."
+      },
+      {
+        "ruc": "20478158867",
+        "nombre": "ALKAPALKA  CONTRATISTAS  GENERALES  S.A.C."
+      },
+      {
+        "ruc": "20602867286",
+        "nombre": "HTCM ASESORES Y CONSTRUCTORES S.R.L - HTCM S.R.L"
+      },
+      {
+        "ruc": "20448297382",
+        "nombre": "GROUP PROYECT SOCIEDAD COMERCIAL DE RESPONSABILIDAD LIMITADA"
+      },
+      {
+        "ruc": "20490243128",
+        "nombre": "S&P CONTRATISTAS GENERALES SOCIEDAD COMERCIAL DE RESPONSABILIDAD LIMITADA"
+      },
+      {
+        "ruc": "20609158400",
+        "nombre": "VEGA Y CERVANTES ASOCIADOS S.A.C."
+      },
+      {
+        "ruc": "20602085784",
+        "nombre": "RTF INGENIERIA CONSULTORES Y EJECUTORES S.A.C."
+      },
+      {
+        "ruc": "20171390614",
+        "nombre": "J.P. CONTRATISTAS GENERALES S.R.LTDA."
+      },
+      {
+        "ruc": "20448302211",
+        "nombre": "CONSTRUCTORA D & R SOCIEDAD ANONIMA CERRADA"
+      },
+      {
+        "ruc": "20602470114",
+        "nombre": "\"CONSTRUCTORA ALMINA E.I.R.L.\""
+      },
+      {
+        "ruc": "20486941287",
+        "nombre": "CONSULTORES Y CONSTRUCTORES  KEVIN S.A.C."
+      },
+      {
+        "ruc": "20564097854",
+        "nombre": "RDVE CONSTRUCTORES SOCIEDAD ANONIMA CERRADA"
+      },
+      {
+        "ruc": "20501788628",
+        "nombre": "DOVAS S.A.C."
+      },
+      {
+        "ruc": "20604833681",
+        "nombre": "JSG CONSTRUCTORES S.A.C."
+      },
+      {
+        "ruc": "20608231685",
+        "nombre": "CRG INGENIEROS E.I.R.L."
+      },
+      {
+        "ruc": "20601016347",
+        "nombre": "ALTICA CONSTRUCCIONES S.R.L."
+      },
+      {
+        "ruc": "20601647053",
+        "nombre": "CORPORACION EMPRESARIAL PROSPECTIVA S.A.C."
+      },
+      {
+        "ruc": "20274419637",
+        "nombre": "J.C.A. CONTRATISTAS GENERALES S.R.LTDA."
+      },
+      {
+        "ruc": "20603425104",
+        "nombre": "TECNICAS DE INGENIERIA Y CONTRATOS S.A.C. - TEINGECON S.A.C."
+      },
+      {
+        "ruc": "20450632598",
+        "nombre": "HYDROGEN  ENERGY PERU SOCIEDAD ANONIMA"
+      },
+      {
+        "ruc": "10238833561",
+        "nombre": "CALLALLI CAITUIRO IRMA VIOLETA"
+      },
+      {
+        "ruc": "20511403627",
+        "nombre": "ZAVATEC SA"
+      },
+      {
+        "ruc": "20527490937",
+        "nombre": "FINANCIERA Y CONSTRUCTORA PERU SOCIEDAD COMERCIAL DE RESPONSABILIDAD LIMITADA"
+      },
+      {
+        "ruc": "20220199968",
+        "nombre": "INDUSTRIAS Y SERVICIOS ELECTRO-MECANICOS S.R.L."
+      },
+      {
+        "ruc": "20602214941",
+        "nombre": "GLOBAL INGENIERIA Y SERVICIOS SOCIEDAD ANÓNIMA CERRADA - GLISER S.A.C."
+      },
+      {
+        "ruc": "20608635581",
+        "nombre": "REFLOC E.I.R.L."
+      },
+      {
+        "ruc": "20502128664",
+        "nombre": "RACC CONSTRUCTORES SOC. COM. RESP. LIM."
+      },
+      {
+        "ruc": "20600376196",
+        "nombre": "INGENIERIA Y SERVICIOS CALIFICADOS SOCIEDAD ANONIMA CERRADA - INSERCAL S.A.C."
+      },
+      {
+        "ruc": "20453914268",
+        "nombre": "GRUPO JACEP S.R.L."
+      },
+      {
+        "ruc": "20489466741",
+        "nombre": "INVERSIONES HILARIO S.A.C."
+      },
+      {
+        "ruc": "20365809179",
+        "nombre": "EL HORIZONTE S.R.L."
+      },
+      {
+        "ruc": "20490348906",
+        "nombre": "CONSTRUCTORA CARDENAS & ALANYA EMPRESA INDIVIDUAL DE RESPONSABILIDAD LIMITADA - CONSTRUCTORA C & AL"
+      },
+      {
+        "ruc": "10295936318",
+        "nombre": "HERRERA ORE PALERMO"
+      },
+      {
+        "ruc": "20527409838",
+        "nombre": "PROMELFA EIRL"
+      },
+      {
+        "ruc": "20550297176",
+        "nombre": "INGENIERÍA DE LA CONSTRUCCIÓN HDH S.A.C. - IC HDH S.A.C."
+      },
+      {
+        "ruc": "20482444912",
+        "nombre": "SOLUCIONES EN CONTROL INDUSTRIAL Y DE PROCESOS S.A.C. - SCIP S.A.C."
+      },
+      {
+        "ruc": "20227508109",
+        "nombre": "ELECTRIC SERVIS L P E I R LTDA"
+      },
+      {
+        "ruc": "20447932882",
+        "nombre": "COCO INGENIEROS CONSULTORES Y CONTRATISTAS GENERALES SOCIEDAD ANONIMA CERRADA"
+      },
+      {
+        "ruc": "20541352547",
+        "nombre": "ENERGIA  SISTEMAS Y TELECOMUNICACIONES SOCIEDAD ANONIMA"
+      },
+      {
+        "ruc": "20357930201",
+        "nombre": "CRELOZ INGENIEROS S.R.LTDA"
+      }
+    ],
+    "num_postores": 63,
+    "ganador": {
+      "ruc": "1644159",
+      "nombre": "CONSORCIO EJECUTORES"
+    },
+    "monto_adjudicado": 5805619.94,
+    "contrato": {
+      "numero": "055-2025",
+      "monto": 5805619.94,
+      "fecha_firma": "2025-04-01T00:00:00-05:00",
+      "inicio": "2025-04-02T00:00:00-05:00",
+      "fin": "2026-03-27T00:00:00-05:00",
+      "duracion_dias": 359
+    },
+    "documentos": [
+      {
+        "titulo": "Bases Administrativas",
+        "tipo": "biddingDocuments",
+        "formato": "docx",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=9ecbd268-55e4-4931-9402-2e58bc4bf5de",
+        "fecha": "2024-12-27T10:40:00-05:00"
+      },
+      {
+        "titulo": "Resumen ejecutivo",
+        "tipo": "biddingDocuments",
+        "formato": "pdf",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=0661c513-e8c0-4116-b7f4-b82584b992ef",
+        "fecha": "2024-12-27T10:40:00-05:00"
+      },
+      {
+        "titulo": "Pliego de absolución de consultas y observaciones",
+        "tipo": "clarifications",
+        "formato": "pdf",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=a11d672e-0f35-4cd6-ad62-10e16fb34813",
+        "fecha": "2025-01-24T12:52:54-05:00"
+      },
+      {
+        "titulo": "Bases Integradas",
+        "tipo": "biddingDocuments",
+        "formato": "docx",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=7b0bcd82-45bd-4cd2-962f-28d85dd9bc89",
+        "fecha": "2025-01-24T12:52:54-05:00"
+      },
+      {
+        "titulo": "Documentos de Presentación de Propuestas",
+        "tipo": "biddingDocuments",
+        "formato": "zip",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=5ab6ef2b-c901-4690-850d-331fb9ab68ff",
+        "fecha": "2025-02-25T16:41:25-05:00"
+      },
+      {
+        "titulo": "Documentos de Calificación y Evaluación",
+        "tipo": "evaluationReports",
+        "formato": "zip",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=fefafb13-7593-418d-8af7-b074a899ebb2",
+        "fecha": "2025-02-25T16:41:26-05:00"
+      },
+      {
+        "titulo": "Documentos de Otorgamiento de Buena Pro",
+        "tipo": "awardNotice",
+        "formato": "zip",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=f2dc40ff-0503-4794-80fc-d8e066397c58",
+        "fecha": "2025-02-25T16:41:26-05:00"
+      },
+      {
+        "titulo": "Archivos del contrato",
+        "tipo": "contractSigned",
+        "url": "https://prod4.seace.gob.pe:9000/api/con/documentos/descargar/152822426",
+        "fecha": "2025-04-07T09:27:03-05:00"
+      },
+      {
+        "titulo": "Archivos del contrato",
+        "tipo": "contractSigned",
+        "url": "https://prod4.seace.gob.pe:9000/api/con/documentos/descargar/152822427",
+        "fecha": "2025-04-07T09:27:02-05:00"
+      },
+      {
+        "titulo": "Archivos de la garantía del contrato",
+        "tipo": "contractAnnexe",
+        "url": "https://prod4.seace.gob.pe:9000/api/con/documentos/descargar/152822429",
+        "fecha": "2025-04-07T09:29:10-05:00"
+      }
+    ],
+    "num_documentos": 10,
+    "fuente": "OCDS_API"
+  },
+  {
+    "ocid": "ocds-dgv273-seacev3-2024-2407-40",
+    "tender_id": "1083598",
+    "nomenclatura": "CP-SM-20-2024-ELSE-1",
+    "descripcion": "SERVICIO DE MANTENIMIENTO 2025 - 2026 ANDAHUAYLAS",
+    "tipo_procedimiento": "Concurso Público",
+    "categoria": "services",
+    "valor_referencial": 5735507.06,
+    "moneda": "PEN",
+    "fecha_publicacion": "2024-12-27T09:42:00-05:00",
+    "cronograma": {
+      "convocatoria_inicio": "2024-12-27T00:00:00-05:00",
+      "convocatoria_fin": "2024-12-27T00:00:00-05:00",
+      "consultas_inicio": "2024-12-28T00:01:00-05:00",
+      "consultas_fin": "2025-01-15T23:59:00-05:00",
+      "buena_pro": "2025-02-21T00:00:00-05:00"
+    },
+    "entidad": {
+      "nombre": "EMPRESA REGIONAL DE SERVICIOS PUBLICOS DE ELECTRICIDAD DEL SUR ESTE S.A.",
+      "ruc": "20116544289",
+      "direccion": "MARISCAL SUCRE Nº 400 URB. BANCOPATA",
+      "departamento": "CUSCO",
+      "telefono": "953759805"
+    },
+    "postores": [
+      {
+        "ruc": "1642774",
+        "nombre": "CONSORCIO ANDAHUAYLAS"
+      },
+      {
+        "ruc": "1642614",
+        "nombre": "CONSORCIO TELPERU"
+      },
+      {
+        "ruc": "20601505321",
+        "nombre": "INVERSIONES Y CONTRATISTAS GUADALUPE EMPRESA INDIVIDUAL DE RESPONSABILIDAD LIMITADA"
+      },
+      {
+        "ruc": "20607212687",
+        "nombre": "TESLA ENERGY & POWER S.A.C."
+      },
+      {
+        "ruc": "20606966106",
+        "nombre": "INGENIERIA, SERVICIOS AMBIENTALES Y MINEROS S.A.C."
+      },
+      {
+        "ruc": "20603155611",
+        "nombre": "HHC CONTRATISTAS GENERALES S.A.C."
+      },
+      {
+        "ruc": "20490024086",
+        "nombre": "INREHGE S.R.L."
+      },
+      {
+        "ruc": "20613095901",
+        "nombre": "WMIR INGENIEROS E.I.R.L."
+      },
+      {
+        "ruc": "20612200140",
+        "nombre": "SIMAA NEGOCIOS S.A.C."
+      },
+      {
+        "ruc": "20604833681",
+        "nombre": "JSG CONSTRUCTORES S.A.C."
+      },
+      {
+        "ruc": "20603425104",
+        "nombre": "TECNICAS DE INGENIERIA Y CONTRATOS S.A.C. - TEINGECON S.A.C."
+      },
+      {
+        "ruc": "20608231685",
+        "nombre": "CRG INGENIEROS E.I.R.L."
+      },
+      {
+        "ruc": "20274419637",
+        "nombre": "J.C.A. CONTRATISTAS GENERALES S.R.LTDA."
+      },
+      {
+        "ruc": "20607249939",
+        "nombre": "G&L ELECTRIC TECHNOLOGY SAC"
+      },
+      {
+        "ruc": "10283152079",
+        "nombre": "SERNA DUEÑAS REYNALDO WILBER"
+      },
+      {
+        "ruc": "20610087532",
+        "nombre": "TENSOR E.I.R.L."
+      },
+      {
+        "ruc": "20450632598",
+        "nombre": "HYDROGEN  ENERGY PERU SOCIEDAD ANONIMA"
+      },
+      {
+        "ruc": "20603488475",
+        "nombre": "CONSTRUCCIONES CIVILES & ELECTRIFICACIONES DEL SUR SOCIEDAD ANONIMA CERRADA"
+      },
+      {
+        "ruc": "20603914920",
+        "nombre": "ROMAGUS INGENIEROS E.I.R.L."
+      },
+      {
+        "ruc": "20609659093",
+        "nombre": "TIENDAFIABLE S.A.C."
+      },
+      {
+        "ruc": "20386255866",
+        "nombre": "CONSTRUCTION & MAINT.ENGINEERING S.A.C."
+      },
+      {
+        "ruc": "20399954682",
+        "nombre": "PROCIEL S.R.LTDA"
+      }
+    ],
+    "num_postores": 22,
+    "ganador": {
+      "ruc": "20386255866",
+      "nombre": "CONSTRUCTION & MAINT.ENGINEERING S.A.C."
+    },
+    "monto_adjudicado": 5385735.0,
+    "contrato": {
+      "numero": "046-2025",
+      "monto": 5385735.0,
+      "fecha_firma": "2025-03-20T00:00:00-05:00",
+      "inicio": "2025-03-21T00:00:00-05:00",
+      "fin": "2027-03-20T00:00:00-05:00",
+      "duracion_dias": 729
+    },
+    "documentos": [
+      {
+        "titulo": "Bases Administrativas",
+        "tipo": "biddingDocuments",
+        "formato": "docx",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=1f3424d0-c2e5-4fb1-959d-ca86b6559061",
+        "fecha": "2024-12-27T09:42:00-05:00"
+      },
+      {
+        "titulo": "Resumen ejecutivo",
+        "tipo": "biddingDocuments",
+        "formato": "pdf",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=1817c73e-7187-487b-87a4-0124db57561f",
+        "fecha": "2024-12-27T09:42:00-05:00"
+      },
+      {
+        "titulo": "Pliego de absolución de consultas y observaciones",
+        "tipo": "clarifications",
+        "formato": "pdf",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=3ebc6553-9745-4aba-ab4a-81a0b654f883",
+        "fecha": "2025-01-21T12:50:48-05:00"
+      },
+      {
+        "titulo": "Bases Integradas",
+        "tipo": "biddingDocuments",
+        "formato": "docx",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=163ce7a9-5793-46e5-a4b5-c374f3c082fa",
+        "fecha": "2025-01-21T12:50:48-05:00"
+      },
+      {
+        "titulo": "Documentos de Presentación de Propuestas",
+        "tipo": "biddingDocuments",
+        "formato": "zip",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=38adf743-4c0f-45a9-adf3-5efbbc1eb724",
+        "fecha": "2025-02-21T16:25:47-05:00"
+      },
+      {
+        "titulo": "Documentos de Calificación y Evaluación",
+        "tipo": "evaluationReports",
+        "formato": "zip",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=482fe29d-586e-4568-a6b1-71a00dce0bef",
+        "fecha": "2025-02-21T16:25:48-05:00"
+      },
+      {
+        "titulo": "Documentos de Otorgamiento de Buena Pro",
+        "tipo": "awardNotice",
+        "formato": "zip",
+        "url": "https://prod1.seace.gob.pe/SeaceWeb-PRO/SdescargarArchivoAlfresco?fileCode=dc8ddc0b-df27-453a-938c-bee41b1a483a",
+        "fecha": "2025-02-21T16:25:48-05:00"
+      },
+      {
+        "titulo": "Archivos del contrato",
+        "tipo": "contractSigned",
+        "url": "https://prod4.seace.gob.pe:9000/api/con/documentos/descargar/152816957",
+        "fecha": "2025-03-28T16:12:29-05:00"
+      }
+    ],
+    "num_documentos": 8,
+    "fuente": "OCDS_API"
+  }
+]

@@ -1,0 +1,780 @@
+API OCDS
+En esta sección puedes encontrar la documentación detallada sobre el uso de la API del Portal de Contrataciones Abiertas de la Compra Publica de Perú.
+
+Documentación de Open Contracting Partnership (OCP) sobre OCDS
+Documentación de referencia del Identificador de Proceso de Contratación (OCID)
+
+Documentación de referencia de entregas o releases
+
+Documentación de referencia de records o registros
+
+
+¿Qué es un identificador de proceso de contratación (OCID)?
+Todo proceso de contratación se identifica de forma única y global mediante un identificador de proceso de contratación (OCID, por sus siglas en inglés) .
+
+Se compone de un prefijo OCID y un identificador para el proceso de contratación.
+
+Prefijo OCID: Es emitido a solicitud por la Open Contracting Partnership. Está conformado por el prefijo ‘ocds’ seguido de una cadena de seis caracteres alfanuméricos. El prefijo OCID es único y sensible a las mayúsculas y minúsculas.
+Identificador para el proceso de contrataciones: Identificador interno utilizado por el publicador para identificar de forma única cada proceso de contratación.
+Ejemplo de un identificador de proceso de contratación (OCID):
+ocds-dgv273-2022-1877-101
+
+¿Qué es un entrega, (release)?
+Toda nueva información sobre un proceso de contratación se describe dentro de una entrega (release). Cada entrega tiene un OCID.
+Las entregas (releases) son inmutables donde cada entrega presenta información sobre un evento particular en la vida de un proceso de contratación. Los publicadores no deben editar una entrega después de su publicación; una nueva entrega puede crearse definiendo un nuevo identificador único (id), la fecha (date) y el identificador de proceso de contratación (OCID) de la entrega.
+
+Ejemplo de un identificador único (id) de una entrega:
+ocds-dgv273-2022-1877-101-2022-11-15T10:42:04.968512-05:00
+
+¿Qué es un paquete de entregas (release package)?
+Toda entrega (release) se publica dentro de un paquete de entregas (release package).
+
+El paquete de entregas proporciona metadatos sobre cada entrega que contiene:
+
+La URI (uri) del paquete de entregas.
+La versión (version) del OCDS usada.
+Una lista de extensiones (extensions) del OCDS usadas.
+La fecha de publicación (publishedDate) del paquete de entregas.
+Una lista de una o más entregas (releases).
+El publicador (publisher) del paquete de entregas.
+
+¿Qué es un registro, (record)?
+Aunque pueden haber múltiples entregas (releases) sobre un proceso de contratación, debe haber un solo registro (record) por proceso de contratación, donde se unen todas las entregas disponibles para el proceso de contratación.
+
+Un registro (record) contiene:
+
+Un identificador único del proceso de contratación (OCID)
+Una lista de entregas (releases) sobre el proceso de contratación, puede ser dando la ubicación (url) del paquete de entregas (release package) y la fecha (date) de la entrega, o incorporando una copia completa de la entrega.
+Una entrega compilada (compiledRelease): es la última versión de todos los datos del proceso de contratación.
+Esto permite al registro funcionar como un índice de todas las entregas sobre un proceso de contratación.
+
+¿Qué es un paquete de registros (record package)?
+Todo registro (record) se publica dentro de un paquete de registros (record package).
+El paquete de registros proporciona metadatos sobre cada registro que contiene:
+
+La URI (uri) del paquete de entregas.
+La versión (version) del OCDS usada.
+Una lista de extensiones (extensions) del OCDS usadas.
+La fecha de publicación (publishedDate) del paquete de entregas.
+Una lista de una o más registros (records).
+El publicador (publisher) del paquete de entregas.
+
+
+¿Cómo probar un endpoint?
+Expandir una categoría, ya sea de Releases (Entregas), Records (Registros) o Files (Archivos de descarga masiva).
+Seleccionar y expandir un método.
+Seleccionar la opción Try it out para poder modificar los parámetros.
+Hacer clic en execute para obtener los resultados. 
+
+
+OAS 3.0
+Release
+Endpoints referentes al releasePackage
+
+
+
+GET
+/release/{id}
+Obtiene un releasePackage por el identificador
+/release/{id}
+GET
+/release/{id}
+Obtiene un releasePackage por el identificador
+
+Parameters
+Try it out
+Name	Description
+id *
+string
+(path)
+Es el identificador del release
+
+id
+Responses
+Code	Description	Links
+200	
+Operación exitosa
+
+Media type
+Controls Accept header.
+No links
+404	
+No encontrado
+
+Media type
+No links
+
+
+GET
+/release/{sourceId}/{tenderId}
+Obtiene una lista de releases en un releasePackage
+GET
+/release/{sourceId}/{tenderId}
+Obtiene una lista de releases en un releasePackage
+
+Obtiene un releasePackage (Paquete de entregas) por el identificador del sistema de origen y por el ID del expediente de la convocatoria para SEACE V3 o el ID de la convocatoria para SEACE V2.
+
+Ejemplo de un identificador de convocatoria (tenderId) para el SEACE V2 es: 3496677
+
+Ejemplo de un identificador de convocatoria (tenderId) para el SEACE V3 es: 873200
+Parameters
+Try it out
+Name	Description
+sourceId *
+string
+(path)
+Es el sistema de origen puede ser SEACE V3 o SEACE V2 que tambien contiene los datos de SEACE V1
+
+Available values : seace_v3, seace_v2
+
+Default value : seace_v2
+
+
+seace_v2
+tenderId *
+string
+(path)
+Es el identificador del expediente de la convocatoria para SEACE V3 y el identificador de la convocatoria para SEACE V2
+
+Default value : 3496677
+
+3496677
+Responses
+Code	Description	Links
+200	
+Operación exitosa
+
+Media type
+Controls Accept header.
+No links
+404	
+No encontrado
+
+Media type
+
+GET
+/releases
+Búsqueda y lista de releases por ciertos criterios, paginación tradicional (método from, size) para explorar menos de 10,000 resultados
+
+
+GET
+/releasesAfter
+Búsqueda y lista de releases por ciertos criterios, recorrido secuencial (método Search after) para explorar más de 10,000 resultados
+GET
+/releases
+Búsqueda y lista de releases por ciertos criterios, paginación tradicional (método from, size) para explorar menos de 10,000 resultados
+
+Ejemplo de un identificador de convocatoria (tenderId) para el SEACE V2 es: 3496677
+
+Ejemplo de un identificador de convocatoria (tenderId) para el SEACE V3 es: 873200
+Parameters
+Try it out
+Name	Description
+page
+integer
+(query)
+Obtiene un numero de página específica del los Releases o Entregas
+
+Default value : 1
+
+1
+order
+string
+(query)
+Ordena los releases por la fecha publicación
+
+Available values : desc, asc
+
+Default value : desc
+
+
+desc
+sourceId
+string
+(query)
+Es el identificador del sistema de origen puede ser SEACE V3 o SEACE V2 que tambien contiene los datos de SEACE V1
+
+Available values : seace_v3, seace_v2
+
+
+--
+startDate
+string($date)
+(query)
+fecha mínima, desde que se comenzo el periodo de licitación, en formato YYYY-MM-DD, si no se especifica se tomará 15 días antes del valor del parámetro startDate
+
+startDate
+endDate
+string($date)
+(query)
+fecha máxima, desde que se comenzo el periodo de licitación, en formato YYYY-MM-DD, si no se especifica se tomará 15 días después del valor del parámetro startDate
+
+endDate
+dataSegmentationID
+string($date)
+(query)
+fecha de segmentación de archivos, en formato YYYY-MM
+
+dataSegmentationID
+tenderId
+string
+(query)
+Es el identificador del expediente de la convocatoria para SEACE V3 y el identificador de la convocatoria para SEACE V2
+
+tenderId
+ocid
+string
+(query)
+Es el Open Contracting ID del proceso de contratación
+
+ocid
+tenderTitle
+string
+(query)
+Es la nomenclatura del proceso de contratación
+
+tenderTitle
+mainProcurementCategory
+string
+(query)
+indica el enfoque primario de un proceso de contrataciones: Bienes y provisiones, Obras, Servicios.
+
+Available values : goods, works, services
+
+
+--
+Responses
+Code	Description	Links
+200	
+Operación exitosa
+
+Media type
+Controls Accept header.
+No links
+404	
+No encontrado
+
+Media type
+No links
+
+GET
+/releasesAfter
+Búsqueda y lista de releases por ciertos criterios, recorrido secuencial (método Search after) para explorar más de 10,000 resultados
+GET
+/releasesAfter
+Búsqueda y lista de releases por ciertos criterios, recorrido secuencial (método Search after) para explorar más de 10,000 resultados
+
+Ejemplo de un identificador de convocatoria (tenderId) para el SEACE V2 es: 3496677
+
+Ejemplo de un identificador de convocatoria (tenderId) para el SEACE V3 es: 873200
+Parameters
+Try it out
+Name	Description
+size
+integer
+(query)
+Obtiene un tamaño de página específica de los Releases Package o Paquete de Entregas, debe ser inferior o igual a 100
+
+Default value : 10
+
+10
+sourceId
+string
+(query)
+Es el identificador del sistema de origen puede ser SEACE V3 o SEACE V2 que tambien contiene los datos de SEACE V1
+
+Available values : seace_v3, seace_v2
+
+
+--
+startDate
+string($date)
+(query)
+fecha mínima, desde que se comenzo el periodo de licitación, en formato YYYY-MM-DD, si no se especifica se tomará 15 días antes del valor del parámetro startDate
+
+startDate
+endDate
+string($date)
+(query)
+fecha máxima, desde que se comenzo el periodo de licitación, en formato YYYY-MM-DD, si no se especifica se tomará 15 días después del valor del parámetro startDate
+
+endDate
+dataSegmentationID
+string($date)
+(query)
+fecha de segmentación de archivos, en formato YYYY-MM
+
+dataSegmentationID
+tenderId
+string
+(query)
+Es el identificador del expediente de la convocatoria para SEACE V3 y el identificador de la convocatoria para SEACE V2
+
+tenderId
+ocid
+string
+(query)
+Es el Open Contracting ID del proceso de contratación
+
+ocid
+tenderTitle
+string
+(query)
+Es la nomenclatura del proceso de contratación
+
+tenderTitle
+mainProcurementCategory
+string
+(query)
+indica el enfoque primario de un proceso de contrataciones: Bienes y provisiones, Obras, Servicios.
+
+Available values : goods, works, services
+
+
+--
+Responses
+Code	Description	Links
+200	
+Operación exitosa
+
+Media type
+Controls Accept header.
+No links
+404	
+No encontrado
+
+Media type
+No links
+
+Record
+Endpoints referentes al recordPackage
+
+
+
+GET
+/record/{ocid}
+Obtiene una lista de RecordPackage
+
+Ejemplo de un Identificador (ocid) es: ocds-dgv273-seacev2-3496677
+Parameters
+Try it out
+Name	Description
+ocid *
+string
+(path)
+Es el identificador del record
+
+Default value : ocds-dgv273-seacev2-3496677
+
+ocds-dgv273-seacev2-3496677
+Responses
+Code	Description	Links
+200	
+Operación exitosa
+
+Media type
+Controls Accept header.
+No links
+404	
+No encontrado
+
+Media type
+No links
+
+GET
+/record/{sourceId}/{tenderId}
+Obtiene una lista de RecordPackage
+
+Obtiene un recordPackage (Paquete de registros) filtrando por el identificador del sistema de origen y por el ID del expediente de la convocatoria para SEACE V3 o el ID de la convocatoria para SEACE V2.
+
+Ejemplo de un identificador de convocatoria (tenderId) para el SEACE V2 es: 3496677
+
+Ejemplo de un identificador de convocatoria (tenderId) para el SEACE V3 es: 873200
+Parameters
+Try it out
+Name	Description
+sourceId *
+string
+(path)
+Es el identificador del sistema de origen puede ser SEACE V3 o SEACE V2 que tambien contiene los datos de SEACE V1
+
+Available values : seace_v3, seace_v2
+
+Default value : seace_v2
+
+
+seace_v2
+tenderId *
+string
+(path)
+Es el identificador del expediente de la convocatoria para SEACE V3 y el identificador de la convocatoria para SEACE V2
+
+Default value : 3414676
+
+3414676
+Responses
+Code	Description	Links
+200	
+Operación exitosa
+
+Media type
+Controls Accept header.
+No links
+404	
+No encontrado
+
+Media type
+No links
+
+GET
+/records
+Búsqueda y lista de records por ciertos criterios, paginación tradicional (método from, size) para explorar menos de 10,000 resultados
+
+Ejemplo de un identificador de convocatoria (tenderId) para el SEACE V2 es: 3496677
+
+Ejemplo de un identificador de convocatoria (tenderId) para el SEACE V3 es: 873200
+Parameters
+Try it out
+Name	Description
+page
+integer
+(query)
+Obtiene un numero de página específica de los Record Package o Paquetes de Registros
+
+Default value : 1
+
+1
+order
+string
+(query)
+Ordena los records por la fecha publicación
+
+Available values : desc, asc
+
+Default value : desc
+
+
+desc
+sourceId
+string
+(query)
+Es el identificador del sistema de origen puede ser SEACE V3 o SEACE V2 que tambien contiene los datos de SEACE V1
+
+Available values : seace_v3, seace_v2
+
+
+--
+startDate
+string($date)
+(query)
+fecha mínima, desde que se comenzo el periodo de licitación, en formato YYYY-MM-DD, si no se especifica se tomará 15 días antes del valor del parámetro startDate
+
+startDate
+endDate
+string($date)
+(query)
+fecha máxima, desde que se comenzo el periodo de licitación, en formato YYYY-MM-DD, si no se especifica se tomará 15 días después del valor del parámetro startDate
+
+endDate
+dataSegmentationID
+string($date)
+(query)
+fecha de segmentación de archivos, en formato YYYY-MM
+
+dataSegmentationID
+tenderId
+string
+(query)
+Es el identificador del expediente de la convocatoria para SEACE V3 y el identificador de la convocatoria para SEACE V2
+
+tenderId
+ocid
+string
+(query)
+Es el Open Contracting ID del proceso de contratación
+
+ocid
+tenderTitle
+string
+(query)
+Es la nomenclatura del proceso de contratación
+
+tenderTitle
+mainProcurementCategory
+string
+(query)
+indica el enfoque primario de un proceso de contrataciones: Bienes y provisiones, Obras, Servicios.
+
+Available values : goods, works, services
+
+
+--
+Responses
+Code	Description	Links
+200	
+Operación exitosa
+
+Media type
+Controls Accept header.
+No links
+404	
+No encontrado
+
+Media type
+No links
+
+GET
+/recordsAfter
+Búsqueda y lista de records por ciertos criterios, recorrido secuencial (método Search after) para explorar más de 10,000 resultados
+
+Ejemplo de un identificador de convocatoria (tenderId) para el SEACE V2 es: 3496677
+
+Ejemplo de un identificador de convocatoria (tenderId) para el SEACE V3 es: 873200
+Parameters
+Try it out
+Name	Description
+size
+integer
+(query)
+Define un tamaño de página específica de los Record Package o Paquetes de Registros, debe ser inferior o igual a 100
+
+Default value : 10
+
+10
+sourceId
+string
+(query)
+Es el identificador del sistema de origen puede ser SEACE V3 o SEACE V2 que tambien contiene los datos de SEACE V1
+
+Available values : seace_v3, seace_v2
+
+
+--
+startDate
+string($date)
+(query)
+fecha mínima, desde que se comenzo el periodo de licitación, en formato YYYY-MM-DD, si no se especifica se tomará 15 días antes del valor del parámetro startDate
+
+startDate
+endDate
+string($date)
+(query)
+fecha máxima, desde que se comenzo el periodo de licitación, en formato YYYY-MM-DD, si no se especifica se tomará 15 días después del valor del parámetro startDate
+
+endDate
+dataSegmentationID
+string($date)
+(query)
+fecha de segmentación de archivos, en formato YYYY-MM
+
+dataSegmentationID
+tenderId
+string
+(query)
+Es el identificador del expediente de la convocatoria para SEACE V3 y el identificador de la convocatoria para SEACE V2
+
+tenderId
+ocid
+string
+(query)
+Es el Open Contracting ID del proceso de contratación
+
+ocid
+tenderTitle
+string
+(query)
+Es la nomenclatura del proceso de contratación
+
+tenderTitle
+mainProcurementCategory
+string
+(query)
+indica el enfoque primario de un proceso de contrataciones: Bienes y provisiones, Obras, Servicios.
+
+Available values : goods, works, services
+
+
+--
+Responses
+Code	Description	Links
+200	
+Operación exitosa
+
+Media type
+Controls Accept header.
+No links
+404	
+No encontrado
+
+Media type
+No links
+OAS 3.0
+Files
+Endpoints referentes a los archivos de descargas masivas
+
+
+
+GET
+/file/{source}/{type}/{year}/{month}
+Obtiene un archivo de descarga masiva
+
+Parameters
+Try it out
+Name	Description
+source *
+string
+(path)
+Fuente del archivo
+
+Available values : seace_v3, seace_v2
+
+Default value : seace_v3
+
+
+seace_v3
+type *
+string
+(path)
+Es el tipo de archivo a descargar
+
+Available values : csv, json, xlsx
+
+Default value : json
+
+
+json
+year *
+integer
+(path)
+Año del archivo
+
+Default value : 2020
+
+2020
+month *
+string
+(path)
+Mes del archivo
+
+Available values : 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12
+
+Default value : 01
+
+
+01
+Responses
+Code	Description	Links
+200	
+Operación exitosa
+
+Media type
+Controls Accept header.
+No links
+404	
+No encontrado
+
+Media type
+No links
+
+GET
+/files
+Obtiene la lista de archivos de descargas masivas
+
+Puede obtener la agrupacion de datos sobre los procesos de contratación en el trancurso de un mes por sistema de origen
+Parameters
+Try it out
+Name	Description
+page
+integer
+(query)
+Obtiene un numero de página específica de los archivos
+
+Default value : 1
+
+1
+source
+string
+(query)
+Es el identificador del sistema de origen puede ser SEACE V3 o SEACE V2 que tambien contiene los datos de SEACE V1
+
+Available values : seace_v3, seace_v2
+
+
+--
+year
+integer
+(path)
+Año del archivo
+
+year
+month
+integer
+(path)
+Mes del archivo
+
+month
+monthName
+string
+(path)
+Nombre del mes del archivo
+
+monthName
+Responses
+Code	Description	Links
+200	
+Operación exitosa
+
+Media type
+Controls Accept header.
+No links
+404	
+No encontrado
+
+Media type
+No links
+
+
+OAS 3.0
+Record
+Endpoints referentes al recordPackage
+
+
+
+GET
+/record/{ocid}
+Obtiene una lista de RecordPackage
+
+
+GET
+/record/{sourceId}/{tenderId}
+Obtiene una lista de RecordPackage
+
+
+GET
+/records
+Búsqueda y lista de records por ciertos criterios, paginación tradicional (método from, size) para explorar menos de 10,000 resultados
+
+
+GET
+/recordsAfter
+Búsqueda y lista de records por ciertos criterios, recorrido secuencial (método Search after) para explorar más de 10,000 resultados
+
+OAS 3.0
+Files
+Endpoints referentes a los archivos de descargas masivas
+
+
+
+GET
+/file/{source}/{type}/{year}/{month}
+Obtiene un archivo de descarga masiva
+
+
+GET
+/files
+Obtiene la lista de archivos de descargas masivas
+
+Documentación de referencia del Identificador de Proceso de Contratación (OCID)
+https://standard.open-contracting.org/1.1/es/schema/identifiers/#contracting-process-identifier-ocid
+https://standard.open-contracting.org/latest/es/schema/reference/
+https://standard.open-contracting.org/latest/es/schema/records_reference/
