@@ -31,6 +31,9 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          VITE_API_URL: https://script.google.com/macros/s/AKfycbxw1LhTtAzr75TmjPjfhxGG1x3F66YWa5qEtkrFVc-aS-J39bZe9YxjdfQfQr89ndiu/exec
+          VITE_SHEETS_URL: https://docs.google.com/spreadsheets/d/1iugi1MAW40jLYeYxkbwC4_pox2tdRfqt4bcIJzjN1lM
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
