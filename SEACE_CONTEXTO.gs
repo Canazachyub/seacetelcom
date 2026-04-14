@@ -110,7 +110,13 @@ const HOJA_BD_PROCESOS = {
  * Propósito: Procesos que el usuario está siguiendo activamente
  * Flujo: Usuario agrega proceso → Se crean las 8 etapas → Se crea carpeta en Drive
  *
- * ESTRUCTURA ESPECIAL: Tiene 11 columnas base + 32 columnas de etapas (4 por cada 8 etapas)
+ * ESTRUCTURA ESPECIAL (v3+): Tiene 11 columnas base + 8 etapas × (2 + 5 años × 3) = 147 columnas
+ *   - 11 columnas base (NOMENCLATURA..CARPETA_DRIVE)
+ *   - Por cada una de las 8 ETAPAS_SEACE: 2 columnas generales (_ESTADO, _NOTAS)
+ *     + 3 columnas (_INICIO, _FIN, _LINK) por cada uno de los 5 años en AÑOS_HISTORICOS
+ *   - Total: 11 + 8 × (2 + 5 × 3) = 11 + 8 × 17 = 147
+ *   - Generado dinámicamente por menuCrearHojasBase() en GOOGLE_APPS_SCRIPT.js
+ *     usando los arreglos ETAPAS_SEACE y AÑOS_HISTORICOS.
  *
  * Columnas Base (A-K):
  * | # | Columna        | Tipo     | Descripción                                    |
@@ -127,8 +133,12 @@ const HOJA_BD_PROCESOS = {
  * | J | FECHA_AGREGADO | DateTime | Fecha en que se agregó a seguimiento           |
  * | K | CARPETA_DRIVE  | String   | URL de la carpeta en Google Drive              |
  *
- * Columnas de Etapas (L-AQ) - 4 columnas por cada una de las 8 etapas:
- * Patrón: {ETAPA}_ESTADO, {ETAPA}_INICIO, {ETAPA}_FIN, {ETAPA}_NOTAS
+ * Columnas de Etapas (L+) - 17 columnas por cada una de las 8 etapas:
+ *   Generales: {ETAPA}_ESTADO, {ETAPA}_NOTAS
+ *   Por año (2021..2025): {ETAPA}_{AÑO}_INICIO, {ETAPA}_{AÑO}_FIN, {ETAPA}_{AÑO}_LINK
+ * NOTA: `columnasEtapa` abajo describe sólo el esquema legacy (4 cols/etapa);
+ *       el esquema real en runtime se genera en GOOGLE_APPS_SCRIPT.js vía
+ *       menuCrearHojasBase() con ETAPAS_SEACE y AÑOS_HISTORICOS (147 cols totales).
  */
 const HOJA_SEGUIMIENTO = {
   nombre: 'SEGUIMIENTO',
@@ -551,7 +561,7 @@ function validarEstructura() {
   const hojas = [
     { config: HOJA_SEACE_IMPORT, esperadas: HOJA_SEACE_IMPORT.columnas.length },
     { config: HOJA_BD_PROCESOS, esperadas: HOJA_BD_PROCESOS.columnas.length },
-    { config: HOJA_SEGUIMIENTO, esperadas: 11 + (8 * 4) }, // 11 base + 32 etapas
+    { config: HOJA_SEGUIMIENTO, esperadas: 11 + (8 * (2 + 5 * 3)) }, // 11 base + 8 etapas × (2 generales + 5 años × 3) = 147
     { config: HOJA_CRONOGRAMA, esperadas: HOJA_CRONOGRAMA.columnas.length },
     { config: HOJA_DOCUMENTOS, esperadas: HOJA_DOCUMENTOS.columnas.length },
     { config: HOJA_FILTROS_ENTIDADES, esperadas: HOJA_FILTROS_ENTIDADES.columnas.length },

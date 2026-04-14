@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { useStore } from './store/useStore';
 import { Layout } from './components/layout/Layout';
-import { Dashboard } from './components/dashboard/Dashboard';
-import { ProcesosTable } from './components/table/ProcesosTable';
 import { FilterPanel } from './components/filters/FilterPanel';
-import { PeruMap } from './components/map/PeruMap';
-import { AIChat } from './components/ai/AIChat';
-import { OCDSTester } from './components/ocds/OCDSTester';
-import { SeguimientoDetalleCompleto } from './components/seguimiento/SeguimientoDetalleCompleto';
+
+const Dashboard = lazy(() => import('./components/dashboard/Dashboard').then(m => ({ default: m.Dashboard })));
+const ProcesosTable = lazy(() => import('./components/table/ProcesosTable').then(m => ({ default: m.ProcesosTable })));
+const PeruMap = lazy(() => import('./components/map/PeruMap').then(m => ({ default: m.PeruMap })));
+const AIChat = lazy(() => import('./components/ai/AIChat').then(m => ({ default: m.AIChat })));
+const OCDSTester = lazy(() => import('./components/ocds/OCDSTester').then(m => ({ default: m.OCDSTester })));
+const SeguimientoDetalleCompleto = lazy(() => import('./components/seguimiento/SeguimientoDetalleCompleto').then(m => ({ default: m.SeguimientoDetalleCompleto })));
 import { Card, CardHeader } from './components/ui/Card';
 import { Button } from './components/ui/Button';
 import { Input } from './components/ui/Input';
@@ -16,7 +17,10 @@ import { Settings, Save, ExternalLink, Star, Search, X, MapPin, TrendingUp, Cale
 import type { Proceso } from './types';
 
 function App() {
-  const { vistaActiva, cargarTodo, apiUrl, setApiUrl } = useStore();
+  const vistaActiva = useStore(s => s.vistaActiva);
+  const cargarTodo = useStore(s => s.cargarTodo);
+  const apiUrl = useStore(s => s.apiUrl);
+  const setApiUrl = useStore(s => s.setApiUrl);
   const [configUrl, setConfigUrl] = useState(apiUrl);
 
   useEffect(() => {
@@ -52,14 +56,21 @@ function App() {
 
   return (
     <Layout>
-      {renderVista()}
-      <AIChat />
+      <Suspense fallback={<div className="p-8 text-center text-gray-500">Cargando...</div>}>
+        {renderVista()}
+      </Suspense>
+      <Suspense fallback={null}>
+        <AIChat />
+      </Suspense>
     </Layout>
   );
 }
 
 function SeguimientoView() {
-  const { seguimiento, procesos, cargarSeguimiento, actualizarSeguimiento } = useStore();
+  const seguimiento = useStore(s => s.seguimiento);
+  const procesos = useStore(s => s.procesos);
+  const cargarSeguimiento = useStore(s => s.cargarSeguimiento);
+  const actualizarSeguimiento = useStore(s => s.actualizarSeguimiento);
   const [selectedProceso, setSelectedProceso] = useState<string | null>(null);
 
   // Estados para edición
@@ -450,7 +461,13 @@ function SeguimientoView() {
 }
 
 function MapaView() {
-  const { filtros, procesosFiltrados, setVistaActiva, setFiltros, limpiarFiltros, agregarSeguimiento, seguimiento } = useStore();
+  const filtros = useStore(s => s.filtros);
+  const procesosFiltrados = useStore(s => s.procesosFiltrados);
+  const setVistaActiva = useStore(s => s.setVistaActiva);
+  const setFiltros = useStore(s => s.setFiltros);
+  const limpiarFiltros = useStore(s => s.limpiarFiltros);
+  const agregarSeguimiento = useStore(s => s.agregarSeguimiento);
+  const seguimiento = useStore(s => s.seguimiento);
   const [procesoDetalle, setProcesoDetalle] = useState<Proceso | null>(null);
   const [busquedaLocal, setBusquedaLocal] = useState('');
   const [objetoFiltro, setObjetoFiltro] = useState<string>('');

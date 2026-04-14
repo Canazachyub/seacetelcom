@@ -1,4 +1,5 @@
-import { useState, useMemo, Fragment, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback, memo } from 'react';
+import { List, type RowComponentProps } from 'react-window';
 import { useStore } from '../../store/useStore';
 import { Badge, EstadoBadge, PrioridadBadge, EmpresaCortaBadge, EstadoFechaBadge, TipoServicioBadge } from '../ui/Badge';
 import { Button } from '../ui/Button';
@@ -6,7 +7,7 @@ import { Card } from '../ui/Card';
 import { formatearMoneda, formatearFecha } from '../../utils/constants';
 import { ProcesoHistoricos, HistoricosIndicador } from '../proceso/ProcesoHistoricos';
 import { SeaceDataViewer } from '../proceso/SeaceDataViewer';
-import type { Proceso } from '../../types';
+import type { Proceso, Seguimiento } from '../../types';
 import {
   ChevronDown,
   ChevronRight,
@@ -28,28 +29,37 @@ import { clsx } from 'clsx';
 type SortKey = 'NOMENCLATURA' | 'ENTIDAD' | 'REGION' | 'VALOR' | 'FECHA_PUB' | 'EMPRESA_CORTA' | 'TIPO_SERVICIO';
 type SortOrder = 'asc' | 'desc';
 
+const ROW_HEIGHT_COLLAPSED = 72;
+const ROW_HEIGHT_EXPANDED = 472;
+
+type RowData = {
+  procesos: Proceso[];
+  expandedRow: number | null;
+  procesosSeleccionados: number[];
+  seguimiento: Seguimiento[];
+  onToggleSelect: (id: number) => void;
+  onToggleExpand: (id: number) => void;
+  onViewDetail: (proceso: Proceso) => void;
+};
+
 export function ProcesosTable() {
-  const {
-    procesosFiltrados,
-    procesos,
-    procesosSeleccionados,
-    toggleProcesoSeleccionado,
-    seleccionarTodos,
-    deseleccionarTodos,
-    setProcesoSeleccionado,
-    seguimiento,
-    agregarSeguimiento
-  } = useStore();
+  const procesosFiltrados = useStore(s => s.procesosFiltrados);
+  const procesos = useStore(s => s.procesos);
+  const procesosSeleccionados = useStore(s => s.procesosSeleccionados);
+  const toggleProcesoSeleccionado = useStore(s => s.toggleProcesoSeleccionado);
+  const seleccionarTodos = useStore(s => s.seleccionarTodos);
+  const deseleccionarTodos = useStore(s => s.deseleccionarTodos);
+  const setProcesoSeleccionado = useStore(s => s.setProcesoSeleccionado);
+  const seguimiento = useStore(s => s.seguimiento);
+  const agregarSeguimiento = useStore(s => s.agregarSeguimiento);
 
   const [sortKey, setSortKey] = useState<SortKey>('FECHA_PUB');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
 
-  // Paginación
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
 
-  // Ordenar procesos
   const procesosSorted = useMemo(() => {
     return [...procesosFiltrados].sort((a, b) => {
       let comparison = 0;
@@ -69,7 +79,6 @@ export function ProcesosTable() {
     });
   }, [procesosFiltrados, sortKey, sortOrder]);
 
-  // Calcular paginación
   const totalPages = Math.ceil(procesosSorted.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
@@ -77,19 +86,24 @@ export function ProcesosTable() {
     return procesosSorted.slice(startIndex, endIndex);
   }, [procesosSorted, startIndex, endIndex]);
 
-  // Resetear página cuando cambian los filtros
   useEffect(() => {
     setCurrentPage(1);
   }, [procesosFiltrados.length]);
 
-  const handleSort = (key: SortKey) => {
-    if (sortKey === key) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortKey(key);
+  useEffect(() => {
+    setExpandedRow(null);
+  }, [currentPage, pageSize, sortKey, sortOrder]);
+
+  const handleSort = useCallback((key: SortKey) => {
+    setSortKey(prevKey => {
+      if (prevKey === key) {
+        setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
+        return prevKey;
+      }
       setSortOrder('desc');
-    }
-  };
+      return key;
+    });
+  }, []);
 
   const SortHeader = ({ column, label }: { column: SortKey; label: string }) => (
     <button
@@ -104,11 +118,6 @@ export function ProcesosTable() {
   const todosSeleccionados = procesosSorted.length > 0 &&
     procesosSorted.every(p => procesosSeleccionados.includes(p.ID));
 
-  const getSeguimientoStatus = (nomenclatura: string) => {
-    return seguimiento.find(s => s.NOMENCLATURA === nomenclatura);
-  };
-
-  // Función para exportar a CSV
   const exportarCSV = () => {
     const headers = [
       'NOMENCLATURA',
@@ -151,7 +160,6 @@ export function ProcesosTable() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
 
-    // Nombre del archivo con fecha y filtro activo
     const fecha = new Date().toISOString().split('T')[0];
     const filtroActivo = procesosSorted.length > 0 && procesosSorted[0].ESTADO_FECHA
       ? `_${procesosSorted[0].ESTADO_FECHA.replace(/ /g, '_')}`
@@ -162,6 +170,34 @@ export function ProcesosTable() {
     URL.revokeObjectURL(url);
   };
 
+  const handleToggleSelect = useCallback((id: number) => {
+    toggleProcesoSeleccionado(id);
+  }, [toggleProcesoSeleccionado]);
+
+  const handleToggleExpand = useCallback((id: number) => {
+    setExpandedRow(prev => (prev === id ? null : id));
+  }, []);
+
+  const handleViewDetail = useCallback((proceso: Proceso) => {
+    setProcesoSeleccionado(proceso);
+  }, [setProcesoSeleccionado]);
+
+  const rowProps = useMemo<RowData>(() => ({
+    procesos: procesosPaginados,
+    expandedRow,
+    procesosSeleccionados,
+    seguimiento,
+    onToggleSelect: handleToggleSelect,
+    onToggleExpand: handleToggleExpand,
+    onViewDetail: handleViewDetail,
+  }), [procesosPaginados, expandedRow, procesosSeleccionados, seguimiento, handleToggleSelect, handleToggleExpand, handleViewDetail]);
+
+  const rowHeight = useCallback((index: number, props: RowData) => {
+    const p = props.procesos[index];
+    if (!p) return ROW_HEIGHT_COLLAPSED;
+    return props.expandedRow === p.ID ? ROW_HEIGHT_EXPANDED : ROW_HEIGHT_COLLAPSED;
+  }, []);
+
   if (procesosSorted.length === 0) {
     return (
       <Card className="text-center py-12">
@@ -170,9 +206,16 @@ export function ProcesosTable() {
     );
   }
 
+  const listHeight = Math.min(
+    Math.max(
+      procesosPaginados.reduce((acc, p) => acc + (expandedRow === p.ID ? ROW_HEIGHT_EXPANDED : ROW_HEIGHT_COLLAPSED), 0),
+      ROW_HEIGHT_COLLAPSED
+    ),
+    Math.max(600, Math.floor((typeof window !== 'undefined' ? window.innerHeight : 900) - 320))
+  );
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-      {/* Header de tabla */}
       <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
@@ -188,7 +231,6 @@ export function ProcesosTable() {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          {/* Botón exportar CSV */}
           <Button
             variant="outline"
             size="sm"
@@ -206,7 +248,6 @@ export function ProcesosTable() {
                 size="sm"
                 icon={<Star size={14} />}
                 onClick={async () => {
-                  // Obtener nomenclaturas únicas de los IDs seleccionados
                   const nomenclaturasUnicas = new Set<string>();
                   for (const id of procesosSeleccionados) {
                     const proceso = procesos.find(p => p.ID === id);
@@ -226,148 +267,51 @@ export function ProcesosTable() {
         </div>
       </div>
 
-      {/* Tabla */}
       <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="w-10 px-2 py-3"></th>
-              <th className="min-w-[180px] px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                <SortHeader column="NOMENCLATURA" label="Proceso" />
-              </th>
-              <th className="min-w-[200px] px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                <SortHeader column="ENTIDAD" label="Entidad" />
-              </th>
-              <th className="min-w-[90px] px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                <SortHeader column="EMPRESA_CORTA" label="Empresa" />
-              </th>
-              <th className="min-w-[70px] px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                <SortHeader column="REGION" label="Región" />
-              </th>
-              <th className="min-w-[80px] px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                <SortHeader column="TIPO_SERVICIO" label="Tipo" />
-              </th>
-              <th className="min-w-[100px] px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                <SortHeader column="VALOR" label="Valor" />
-              </th>
-              <th className="min-w-[80px] px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                <SortHeader column="FECHA_PUB" label="Fecha" />
-              </th>
-              <th className="min-w-[85px] px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                Antigüedad
-              </th>
-              <th className="min-w-[70px] px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                Estado
-              </th>
-              <th className="w-8 px-2 py-3"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {procesosPaginados.map((proceso) => {
-              const isExpanded = expandedRow === proceso.ID;
-              const isSelected = procesosSeleccionados.includes(proceso.ID);
-              const seguimientoStatus = getSeguimientoStatus(proceso.NOMENCLATURA);
+        <div className="min-w-[1100px]">
+          <div className="flex items-center bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+            <div className="w-10 px-2 py-3 flex-shrink-0"></div>
+            <div className="min-w-[180px] flex-1 px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <SortHeader column="NOMENCLATURA" label="Proceso" />
+            </div>
+            <div className="min-w-[200px] flex-1 px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <SortHeader column="ENTIDAD" label="Entidad" />
+            </div>
+            <div className="min-w-[90px] flex-shrink-0 px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+              <SortHeader column="EMPRESA_CORTA" label="Empresa" />
+            </div>
+            <div className="min-w-[70px] flex-shrink-0 px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+              <SortHeader column="REGION" label="Región" />
+            </div>
+            <div className="min-w-[80px] flex-shrink-0 px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+              <SortHeader column="TIPO_SERVICIO" label="Tipo" />
+            </div>
+            <div className="min-w-[100px] flex-shrink-0 px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+              <SortHeader column="VALOR" label="Valor" />
+            </div>
+            <div className="min-w-[80px] flex-shrink-0 px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+              <SortHeader column="FECHA_PUB" label="Fecha" />
+            </div>
+            <div className="min-w-[85px] flex-shrink-0 px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+              Antigüedad
+            </div>
+            <div className="min-w-[70px] flex-shrink-0 px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+              Estado
+            </div>
+            <div className="w-8 flex-shrink-0 px-2 py-3"></div>
+          </div>
 
-              return (
-                <Fragment key={proceso.ID}>
-                  <tr
-                    className={clsx(
-                      'hover:bg-gray-50 transition-colors',
-                      isSelected && 'bg-blue-50'
-                    )}
-                  >
-                    <td className="px-2 py-3">
-                      <button
-                        onClick={() => toggleProcesoSeleccionado(proceso.ID)}
-                        className={clsx(
-                          'transition-colors',
-                          isSelected ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'
-                        )}
-                      >
-                        {isSelected ? <CheckSquare size={18} /> : <Square size={18} />}
-                      </button>
-                    </td>
-                    <td className="px-2 py-3">
-                      <div className="flex items-start gap-1">
-                        <button
-                          onClick={() => setExpandedRow(isExpanded ? null : proceso.ID)}
-                          className="text-gray-400 hover:text-gray-600 mt-0.5 flex-shrink-0"
-                        >
-                          {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                        </button>
-                        <div className="min-w-0">
-                          <p className="font-medium text-gray-900 text-sm">
-                            {proceso.NOMENCLATURA}
-                          </p>
-                          <p className="text-xs text-gray-500 line-clamp-1" title={proceso.DESCRIPCION || ''}>
-                            {proceso.DESCRIPCION}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-2 py-3">
-                      <p className="text-sm text-gray-900 line-clamp-2" title={proceso.ENTIDAD}>
-                        {proceso.ENTIDAD}
-                      </p>
-                    </td>
-                    <td className="px-2 py-3 text-center">
-                      <EmpresaCortaBadge empresa={proceso.EMPRESA_CORTA} />
-                    </td>
-                    <td className="px-2 py-3 text-center">
-                      <Badge variant="default" className="text-xs">{proceso.REGION}</Badge>
-                    </td>
-                    <td className="px-2 py-3 text-center">
-                      <TipoServicioBadge tipo={proceso.TIPO_SERVICIO} />
-                    </td>
-                    <td className="px-2 py-3 text-right">
-                      <p className="text-sm font-medium text-gray-900 whitespace-nowrap">
-                        {formatearMoneda(proceso.VALOR, proceso.MONEDA)}
-                      </p>
-                    </td>
-                    <td className="px-2 py-3 text-center">
-                      <p className="text-xs text-gray-600 whitespace-nowrap">
-                        {formatearFecha(proceso.FECHA_PUB)}
-                      </p>
-                    </td>
-                    <td className="px-2 py-3 text-center">
-                      <EstadoFechaBadge estado={proceso.ESTADO_FECHA} />
-                    </td>
-                    <td className="px-2 py-3 text-center">
-                      <div className="flex items-center gap-1 justify-center">
-                        {seguimientoStatus ? (
-                          <EstadoBadge estado={seguimientoStatus.ESTADO_INTERES} />
-                        ) : (
-                          <span className="text-gray-400 text-xs">-</span>
-                        )}
-                        <HistoricosIndicador proceso={proceso} />
-                      </div>
-                    </td>
-                    <td className="px-2 py-3">
-                      <button
-                        onClick={() => setProcesoSeleccionado(proceso)}
-                        className="text-gray-400 hover:text-blue-600"
-                      >
-                        <Eye size={16} />
-                      </button>
-                    </td>
-                  </tr>
-
-                  {/* Fila expandida */}
-                  {isExpanded && (
-                    <tr className="bg-gray-50">
-                      <td colSpan={11} className="px-4 py-4">
-                        <ProcesoExpandido proceso={proceso} />
-                      </td>
-                    </tr>
-                  )}
-                </Fragment>
-              );
-            })}
-          </tbody>
-        </table>
+          <List
+            rowComponent={ProcesoRow}
+            rowCount={procesosPaginados.length}
+            rowHeight={rowHeight}
+            rowProps={rowProps}
+            style={{ height: listHeight, width: '100%' }}
+            overscanCount={3}
+          />
+        </div>
       </div>
 
-      {/* Controles de paginación */}
       {totalPages > 1 && (
         <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -436,10 +380,125 @@ export function ProcesosTable() {
   );
 }
 
+const ProcesoRowInner = memo(function ProcesoRowInner({
+  index,
+  style,
+  procesos,
+  expandedRow,
+  procesosSeleccionados,
+  seguimiento,
+  onToggleSelect,
+  onToggleExpand,
+  onViewDetail,
+}: RowComponentProps<RowData>) {
+  const proceso = procesos[index];
+  if (!proceso) return <div style={style} />;
+  const isExpanded = expandedRow === proceso.ID;
+  const isSelected = procesosSeleccionados.includes(proceso.ID);
+  const seguimientoStatus = seguimiento.find(s => s.NOMENCLATURA === proceso.NOMENCLATURA);
+
+  return (
+    <div style={style} className="border-b border-gray-100">
+      <div
+        className={clsx(
+          'flex items-start hover:bg-gray-50 transition-colors',
+          isSelected && 'bg-blue-50'
+        )}
+        style={{ height: ROW_HEIGHT_COLLAPSED }}
+      >
+        <div className="w-10 px-2 py-3 flex-shrink-0">
+          <button
+            onClick={() => onToggleSelect(proceso.ID)}
+            className={clsx(
+              'transition-colors',
+              isSelected ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'
+            )}
+          >
+            {isSelected ? <CheckSquare size={18} /> : <Square size={18} />}
+          </button>
+        </div>
+        <div className="min-w-[180px] flex-1 px-2 py-3">
+          <div className="flex items-start gap-1">
+            <button
+              onClick={() => onToggleExpand(proceso.ID)}
+              className="text-gray-400 hover:text-gray-600 mt-0.5 flex-shrink-0"
+            >
+              {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            </button>
+            <div className="min-w-0">
+              <p className="font-medium text-gray-900 text-sm">
+                {proceso.NOMENCLATURA}
+              </p>
+              <p className="text-xs text-gray-500 line-clamp-1" title={proceso.DESCRIPCION || ''}>
+                {proceso.DESCRIPCION}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="min-w-[200px] flex-1 px-2 py-3">
+          <p className="text-sm text-gray-900 line-clamp-2" title={proceso.ENTIDAD}>
+            {proceso.ENTIDAD}
+          </p>
+        </div>
+        <div className="min-w-[90px] flex-shrink-0 px-2 py-3 text-center">
+          <EmpresaCortaBadge empresa={proceso.EMPRESA_CORTA} />
+        </div>
+        <div className="min-w-[70px] flex-shrink-0 px-2 py-3 text-center">
+          <Badge variant="default" className="text-xs">{proceso.REGION}</Badge>
+        </div>
+        <div className="min-w-[80px] flex-shrink-0 px-2 py-3 text-center">
+          <TipoServicioBadge tipo={proceso.TIPO_SERVICIO} />
+        </div>
+        <div className="min-w-[100px] flex-shrink-0 px-2 py-3 text-right">
+          <p className="text-sm font-medium text-gray-900 whitespace-nowrap">
+            {formatearMoneda(proceso.VALOR, proceso.MONEDA)}
+          </p>
+        </div>
+        <div className="min-w-[80px] flex-shrink-0 px-2 py-3 text-center">
+          <p className="text-xs text-gray-600 whitespace-nowrap">
+            {formatearFecha(proceso.FECHA_PUB)}
+          </p>
+        </div>
+        <div className="min-w-[85px] flex-shrink-0 px-2 py-3 text-center">
+          <EstadoFechaBadge estado={proceso.ESTADO_FECHA} />
+        </div>
+        <div className="min-w-[70px] flex-shrink-0 px-2 py-3 text-center">
+          <div className="flex items-center gap-1 justify-center">
+            {seguimientoStatus ? (
+              <EstadoBadge estado={seguimientoStatus.ESTADO_INTERES} />
+            ) : (
+              <span className="text-gray-400 text-xs">-</span>
+            )}
+            <HistoricosIndicador proceso={proceso} />
+          </div>
+        </div>
+        <div className="w-8 flex-shrink-0 px-2 py-3">
+          <button
+            onClick={() => onViewDetail(proceso)}
+            className="text-gray-400 hover:text-blue-600"
+          >
+            <Eye size={16} />
+          </button>
+        </div>
+      </div>
+
+      {isExpanded && (
+        <div className="bg-gray-50 px-4 py-4" style={{ height: ROW_HEIGHT_EXPANDED - ROW_HEIGHT_COLLAPSED, overflow: 'auto' }}>
+          <ProcesoExpandido proceso={proceso} />
+        </div>
+      )}
+    </div>
+  );
+});
+
+const ProcesoRow = (props: RowComponentProps<RowData>) => <ProcesoRowInner {...props} />;
+
 type ExpandedTab = 'info' | 'historicos' | 'ocds';
 
 function ProcesoExpandido({ proceso }: { proceso: Proceso }) {
-  const { agregarSeguimiento, eliminarSeguimiento, seguimiento } = useStore();
+  const agregarSeguimiento = useStore(s => s.agregarSeguimiento);
+  const eliminarSeguimiento = useStore(s => s.eliminarSeguimiento);
+  const seguimiento = useStore(s => s.seguimiento);
   const [eliminando, setEliminando] = useState(false);
   const seguimientoActual = (seguimiento || []).find(s => s.NOMENCLATURA === proceso.NOMENCLATURA);
   const [tabActivo, setTabActivo] = useState<ExpandedTab>('info');
@@ -452,7 +511,6 @@ function ProcesoExpandido({ proceso }: { proceso: Proceso }) {
 
   return (
     <div className="animate-fadeIn">
-      {/* Tabs de navegación */}
       <div className="flex border-b border-gray-200 mb-4">
         {tabs.map(tab => (
           <button
@@ -471,7 +529,6 @@ function ProcesoExpandido({ proceso }: { proceso: Proceso }) {
         ))}
       </div>
 
-      {/* Tab: Información */}
       {tabActivo === 'info' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -551,12 +608,10 @@ function ProcesoExpandido({ proceso }: { proceso: Proceso }) {
         </div>
       )}
 
-      {/* Tab: Históricos */}
       {tabActivo === 'historicos' && (
         <ProcesoHistoricos proceso={proceso} />
       )}
 
-      {/* Tab: Datos OCDS */}
       {tabActivo === 'ocds' && (
         <SeaceDataViewer nomenclatura={proceso.NOMENCLATURA} proceso={proceso} />
       )}

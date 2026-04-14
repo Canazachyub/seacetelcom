@@ -36,7 +36,7 @@ interface Props {
 }
 
 export function ProcesoHistoricos({ proceso }: Props) {
-  const { procesos } = useStore();
+  const procesos = useStore(s => s.procesos);
   const [expandido, setExpandido] = useState(false);
   const [seleccionados, setSeleccionados] = useState<Set<string>>(new Set());
   const [creandoGrupo, setCreandoGrupo] = useState(false);
@@ -455,7 +455,7 @@ function HistoricoItem({
 
 // Exportar también un componente compacto para mostrar en la lista
 export function HistoricosIndicador({ proceso }: Props) {
-  const { procesos } = useStore();
+  const procesos = useStore(s => s.procesos);
 
   const cantidadHistoricos = useMemo(() => {
     const historicos = buscarHistoricos(proceso, procesos || [], 0.25);

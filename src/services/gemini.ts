@@ -2,22 +2,19 @@ import { GoogleGenAI } from "@google/genai";
 import type { Proceso, DatosHistoricoExtraido } from '../types';
 
 // ==================== API KEYS (RULETA) ====================
+// NOTE: VITE_* env vars are bundled into the client build, so this is
+// source hygiene only. True secrecy requires a server-side proxy.
 
-const API_KEYS = [
-  "AIzaSyDGf0d9JdoQSIWq6f05xC_O4-Ayg_cqMcs",
-  "AIzaSyBOcWvU7O_7qA8Oy7kZlwxCPmxPrmdkiUU",
-  "AIzaSyBEFqF5-rsCnGTxNn0YxEWHpsFfhKI_yXo",
-  "AIzaSyCFO5rQFoqZgeruOzDMrYn9CiKVjdeTG-M",
-  "AIzaSyDWEG8tPDTG4WNhk_8LuG3vvfwwLaWdLPk",
-  "AIzaSyDv0HNQQsqYzCWjWdOhpEXR-v8IFglzPRA",
-  "AIzaSyBL7nJ_FFN5GCiKXAJHJqJhSokb2sGFaKI",
-  "AIzaSyD-uPWUTPJwlFLUCRjRVhcVpGqW8T2BPhM",
-  "AIzaSyDQV1rZmTdp3nXWz1SbIFJslb3VHk9lneg",
-  "AIzaSyBjviFBLhyHQgChGDNcX-cZ9zZCaG3T9pA",
-  "AIzaSyCDsJ2K3kMb0vMO-OgkOd9hSj_OdVQVxJ4",
-  "AIzaSyA1V6Z9UtDnGrV8zG4nJlnlBOsaOnL1nnQ",
-  "AIzaSyBH8uDMnLjNWxJlFjY6kFPZmTdZgLcNqrY"
-];
+const API_KEYS: string[] = (import.meta.env.VITE_GEMINI_API_KEYS ?? '')
+  .split(',')
+  .map((k: string) => k.trim())
+  .filter(Boolean);
+
+let _warnedEmptyKeys = false;
+if (API_KEYS.length === 0 && !_warnedEmptyKeys) {
+  _warnedEmptyKeys = true;
+  console.warn('VITE_GEMINI_API_KEYS is empty or missing; Gemini calls will fail.');
+}
 
 const MODEL_NAME = "gemini-2.5-flash";
 
@@ -199,7 +196,16 @@ IMPORTANTE: Responde SOLO con el JSON, sin texto adicional.
   // ==================== CHAT CONTEXTUAL ====================
 
   async chatContextual(mensaje: string, procesos: Proceso[]): Promise<string> {
-    const contexto = procesos.slice(0, 10).map(p =>
+    const CHAT_CONTEXT_CAP = 50;
+    const procesosContexto = procesos.slice(0, CHAT_CONTEXT_CAP);
+    if (procesos.length > CHAT_CONTEXT_CAP) {
+      console.warn(`chatContextual: truncated ${procesos.length} procesos to ${CHAT_CONTEXT_CAP}`, {
+        _truncated: true,
+        _originalCount: procesos.length,
+        _sentCount: CHAT_CONTEXT_CAP,
+      });
+    }
+    const contexto = procesosContexto.map(p =>
       `- ${p.NOMENCLATURA}: ${p.DESCRIPCION} (${p.ENTIDAD}, S/ ${p.VALOR?.toLocaleString()})`
     ).join('\n');
 

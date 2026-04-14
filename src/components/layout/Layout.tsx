@@ -20,7 +20,12 @@ interface LayoutProps {
   children: ReactNode;
 }
 export function Layout({ children }: LayoutProps) {
-  const { vistaActiva, setVistaActiva, cargarTodo, cargando, chatAbierto, setChatAbierto } = useStore();
+  const vistaActiva = useStore(s => s.vistaActiva);
+  const setVistaActiva = useStore(s => s.setVistaActiva);
+  const cargarTodo = useStore(s => s.cargarTodo);
+  const cargando = useStore(s => s.cargando);
+  const chatAbierto = useStore(s => s.chatAbierto);
+  const setChatAbierto = useStore(s => s.setChatAbierto);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },

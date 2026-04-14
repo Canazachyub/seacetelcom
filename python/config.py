@@ -31,17 +31,9 @@ SEACE_CONFIG = {
     "REQUEST_TIMEOUT": 15,
 }
 
-# Google Sheets
-SHEETS_CONFIG = {
-    "CREDENTIALS_FILE": BASE_DIR / "credentials.json",
-    "SPREADSHEET_NAME": "SEACE_INTELLIGENCE",
-    "SHEETS": {
-        "BD_PROCESOS": "BD_PROCESOS",
-        "CRONOGRAMA": "CRONOGRAMA",
-        "DOCUMENTOS": "DOCUMENTOS",
-        "DATOS_SEACE": "DATOS_SEACE"
-    }
-}
+# Google Sheets: la integracion actual es manual (importar CSV generado
+# por generar_indice.py a la hoja OCDS_INDEX). No hay credenciales de API
+# en uso; SHEETS_CONFIG/CREDENTIALS_FILE fueron removidos por dead code.
 
 # Mapeo de etapas SEACE a nombres internos
 ETAPAS_MAPPING = {

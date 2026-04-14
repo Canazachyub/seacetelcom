@@ -278,101 +278,177 @@ export async function addSeguimientoCompleto(
  * - Crea carpeta en Drive
  * - Retorna información completa del proceso
  */
-export async function addSeguimientoConOCDS(
-  nomenclatura: string,
-  estado: string,
-  prioridad: string,
-  notas: string,
-  crearCarpeta: boolean = true
-): Promise<{
+export interface AddSeguimientoConOCDSStatus {
+  ocdsLoaded: boolean;
+  seguimientoCreated: boolean;
+  etapasUpdated: number;
+  etapasTotal: number;
+  errors: string[];
+}
+
+export interface AddSeguimientoConOCDSResult {
   success: boolean;
   carpetaDrive?: string;
   datosOCDS?: DatosProcesoOCDS;
   cronogramaActualizado?: boolean;
   mensaje?: string;
-}> {
-  try {
-    // 1. Intentar obtener datos OCDS
-    const datosOCDS = await getProcesoOCDS(nomenclatura);
+  partial?: boolean;
+  rolledBack?: boolean;
+  status?: AddSeguimientoConOCDSStatus;
+}
 
-    // 2. Agregar a seguimiento con carpeta
-    const resultado = await addSeguimientoCompleto(
+export async function addSeguimientoConOCDS(
+  nomenclatura: string,
+  estado: string,
+  prioridad: string,
+  notas: string,
+  crearCarpeta: boolean = true,
+  rollbackOnPartialFailure: boolean = false
+): Promise<AddSeguimientoConOCDSResult> {
+  const status: AddSeguimientoConOCDSStatus = {
+    ocdsLoaded: false,
+    seguimientoCreated: false,
+    etapasUpdated: 0,
+    etapasTotal: 0,
+    errors: [],
+  };
+
+  let datosOCDS: DatosProcesoOCDS | null = null;
+  try {
+    datosOCDS = await getProcesoOCDS(nomenclatura);
+    status.ocdsLoaded = datosOCDS !== null;
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : 'Error desconocido al obtener OCDS';
+    console.error('Error obteniendo OCDS en addSeguimientoConOCDS:', error);
+    status.errors.push(`OCDS: ${msg}`);
+  }
+
+  let resultado: { success: boolean; carpetaDrive?: string };
+  try {
+    resultado = await addSeguimientoCompleto(
       nomenclatura,
       estado,
       prioridad,
       notas,
       crearCarpeta
     );
-
     if (!resultado.success) {
-      return { success: false, mensaje: 'Error al agregar a seguimiento' };
+      throw new Error('addSeguimientoCompleto retornó success=false');
     }
+    status.seguimientoCreated = true;
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : 'Error al agregar a seguimiento';
+    console.error('Error creando seguimiento en addSeguimientoConOCDS:', error);
+    status.errors.push(`Seguimiento: ${msg}`);
+    return { success: false, mensaje: msg, status };
+  }
 
-    // 3. Si hay datos OCDS, actualizar etapas con cronograma real
-    if (datosOCDS && datosOCDS.cronograma) {
-      let etapasActualizadas = 0;
+  const etapasPlan: Array<{
+    etapa: EtapaSeace;
+    inicio: string;
+    fin: string;
+  }> = [];
 
-      // Convocatoria
-      if (datosOCDS.cronograma.convocatoriaInicio) {
-        await updateEtapaSeguimiento(
-          nomenclatura,
-          'CONVOCATORIA',
-          'COMPLETADO',
-          datosOCDS.cronograma.convocatoriaInicio,
-          datosOCDS.cronograma.convocatoriaFin || datosOCDS.cronograma.convocatoriaInicio,
-          'Actualizado desde OCDS'
-        );
-        etapasActualizadas++;
-      }
-
-      // Consultas y Observaciones
-      if (datosOCDS.cronograma.consultasInicio) {
-        await updateEtapaSeguimiento(
-          nomenclatura,
-          'CONSULTAS_OBSERVACIONES',
-          'COMPLETADO',
-          datosOCDS.cronograma.consultasInicio,
-          datosOCDS.cronograma.consultasFin || datosOCDS.cronograma.consultasInicio,
-          'Actualizado desde OCDS'
-        );
-        etapasActualizadas++;
-      }
-
-      // Buena Pro
-      if (datosOCDS.cronograma.buenaPro) {
-        await updateEtapaSeguimiento(
-          nomenclatura,
-          'BUENA_PRO',
-          'COMPLETADO',
-          datosOCDS.cronograma.buenaPro,
-          datosOCDS.cronograma.buenaPro,
-          'Actualizado desde OCDS'
-        );
-        etapasActualizadas++;
-      }
-
-      return {
-        success: true,
-        carpetaDrive: resultado.carpetaDrive,
-        datosOCDS: datosOCDS,
-        cronogramaActualizado: etapasActualizadas > 0,
-        mensaje: `Proceso agregado con ${etapasActualizadas} etapas actualizadas desde OCDS`
-      };
+  if (datosOCDS && datosOCDS.cronograma) {
+    if (datosOCDS.cronograma.convocatoriaInicio) {
+      etapasPlan.push({
+        etapa: 'CONVOCATORIA',
+        inicio: datosOCDS.cronograma.convocatoriaInicio,
+        fin: datosOCDS.cronograma.convocatoriaFin || datosOCDS.cronograma.convocatoriaInicio,
+      });
     }
+    if (datosOCDS.cronograma.consultasInicio) {
+      etapasPlan.push({
+        etapa: 'CONSULTAS_OBSERVACIONES',
+        inicio: datosOCDS.cronograma.consultasInicio,
+        fin: datosOCDS.cronograma.consultasFin || datosOCDS.cronograma.consultasInicio,
+      });
+    }
+    if (datosOCDS.cronograma.buenaPro) {
+      etapasPlan.push({
+        etapa: 'BUENA_PRO',
+        inicio: datosOCDS.cronograma.buenaPro,
+        fin: datosOCDS.cronograma.buenaPro,
+      });
+    }
+  }
 
-    // 4. Si no hay datos OCDS, retornar éxito básico
+  status.etapasTotal = etapasPlan.length;
+
+  for (const plan of etapasPlan) {
+    try {
+      await updateEtapaSeguimiento(
+        nomenclatura,
+        plan.etapa,
+        'COMPLETADO',
+        plan.inicio,
+        plan.fin,
+        'Actualizado desde OCDS'
+      );
+      status.etapasUpdated++;
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Error desconocido';
+      console.error(`Error actualizando etapa ${plan.etapa} en addSeguimientoConOCDS:`, error);
+      status.errors.push(`Etapa ${plan.etapa}: ${msg}`);
+    }
+  }
+
+  const hasEtapaFailures = status.etapasTotal > 0 && status.etapasUpdated < status.etapasTotal;
+
+  if (hasEtapaFailures && rollbackOnPartialFailure) {
+    let rolledBack = false;
+    try {
+      const del = await deleteSeguimiento(nomenclatura);
+      rolledBack = del.success;
+      if (!del.success) {
+        status.errors.push(`Rollback: deleteSeguimiento retornó success=false`);
+      }
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Error desconocido';
+      console.error('Error en rollback de addSeguimientoConOCDS:', error);
+      status.errors.push(`Rollback: ${msg}`);
+    }
+    return {
+      success: false,
+      rolledBack,
+      mensaje: `Rollback ejecutado: solo ${status.etapasUpdated} de ${status.etapasTotal} etapas sincronizadas`,
+      status,
+      datosOCDS: datosOCDS ?? undefined,
+      carpetaDrive: resultado.carpetaDrive,
+    };
+  }
+
+  if (hasEtapaFailures) {
+    return {
+      success: true,
+      partial: true,
+      carpetaDrive: resultado.carpetaDrive,
+      datosOCDS: datosOCDS ?? undefined,
+      cronogramaActualizado: status.etapasUpdated > 0,
+      mensaje: `Seguimiento creado con ${status.etapasUpdated} de ${status.etapasTotal} etapas sincronizadas`,
+      status,
+    };
+  }
+
+  if (datosOCDS && datosOCDS.cronograma) {
     return {
       success: true,
       carpetaDrive: resultado.carpetaDrive,
-      mensaje: 'Proceso agregado a seguimiento. Datos OCDS no disponibles.'
-    };
-  } catch (error) {
-    console.error('Error en addSeguimientoConOCDS:', error);
-    return {
-      success: false,
-      mensaje: error instanceof Error ? error.message : 'Error desconocido'
+      datosOCDS,
+      cronogramaActualizado: status.etapasUpdated > 0,
+      mensaje: `Proceso agregado con ${status.etapasUpdated} etapas actualizadas desde OCDS`,
+      status,
     };
   }
+
+  return {
+    success: true,
+    carpetaDrive: resultado.carpetaDrive,
+    mensaje: status.ocdsLoaded
+      ? 'Proceso agregado a seguimiento. Sin cronograma OCDS.'
+      : 'Proceso agregado a seguimiento. Datos OCDS no disponibles.',
+    status,
+  };
 }
 
 /**

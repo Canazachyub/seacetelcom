@@ -37,7 +37,8 @@ const CONFIG = {
     OCDS_INDEX: 'OCDS_INDEX',  // Índice ligero: nomenclatura -> tender_id -> ocid
     FILTROS_EMPRESAS_ELECTRICAS: 'FILTROS_EMPRESAS_ELECTRICAS',  // v2.0: Empresas eléctricas configurables
     HISTORICOS_DETALLE: 'HISTORICOS_DETALLE',  // v2.0: Detalle completo de históricos multi-año
-    POSTORES: 'POSTORES'  // v3.0: Postores de procesos
+    POSTORES: 'POSTORES',  // v3.0: Postores de procesos
+    ENLACES_RAPIDOS: 'ENLACES_RAPIDOS'  // v3.2: Enlaces de acceso rápido configurables
   },
 
   // Carpeta raíz de Drive para seguimiento
@@ -81,10 +82,12 @@ const BD_COLS = {
   VERSION: 9,
   REINICIADO: 10,
   URL: 11,
-  // v3.1: Columnas de clasificación automática (del script Python)
-  EMPRESA_CORTA: 12,      // Clasificación corta de empresa eléctrica
-  ESTADO_FECHA: 13,       // Estado según fecha (ESTA SEMANA, ESTE MES, etc.)
-  TIPO_SERVICIO: 14       // Tipo de servicio (MANTENIMIENTO, SUPERVISIÓN, etc.)
+  // v3.1: Columnas de clasificación automática (poblado manualmente o por
+  // Apps Script; actualmente NO lo llena ningún script Python — pueden estar
+  // vacías hasta que se corran las utilidades internas de clasificación)
+  EMPRESA_CORTA: 12,      // Clasificación corta de empresa eléctrica (manual/vacío)
+  ESTADO_FECHA: 13,       // Estado según fecha (ESTA SEMANA, ESTE MES, etc.) (manual/vacío)
+  TIPO_SERVICIO: 14       // Tipo de servicio (MANTENIMIENTO, SUPERVISIÓN, etc.) (manual/vacío)
 };
 
 // Columnas de SEACE_IMPORT (índices 0-based)
@@ -750,7 +753,12 @@ const Router = {
 
       // === v2.0: HISTÓRICOS DETALLE ===
       'guardarHistoricoExtraidoIA': { handler: HistoricosDetalle.guardarExtraidoIA, method: 'ANY' },
-      'getComparativaHistoricos': { handler: HistoricosDetalle.getComparativa, method: 'GET' }
+      'getComparativaHistoricos': { handler: HistoricosDetalle.getComparativa, method: 'GET' },
+
+      // === v3.2: ENLACES RÁPIDOS Y SCRAPING SEACE (stubs/lecturas ligeras) ===
+      'getEnlacesRapidos': { handler: EnlacesRapidos.getAll, method: 'GET' },
+      'getDatosSeace': { handler: DatosSeaceLookup.getByNomenclatura, method: 'GET' },
+      'getEstadoScraping': { handler: EstadoScraping.get, method: 'GET' }
     };
 
     const route = routes[action];
@@ -4327,6 +4335,122 @@ const HistoricosDetalle = {
     sheet.setColumnWidth(7, 300); // OBJETO
 
     return sheet;
+  }
+};
+
+// ==================== MÓDULO: ENLACES RÁPIDOS ====================
+
+const EnlacesRapidos = {
+  /**
+   * Obtiene los enlaces rápidos configurados en la hoja ENLACES_RAPIDOS.
+   * Si la hoja no existe se retorna un arreglo vacío (la hoja se crea
+   * perezosamente la primera vez que un usuario la necesite, fuera de este
+   * endpoint de solo lectura).
+   * Columnas esperadas: ID, NOMBRE, URL, CATEGORIA, ICONO, COLOR, ORDEN, ACTIVO
+   */
+  getAll: function(params) {
+    try {
+      const ss = SpreadsheetApp.getActiveSpreadsheet();
+      const sheet = ss.getSheetByName(CONFIG.SHEETS.ENLACES_RAPIDOS);
+
+      if (!sheet) {
+        return Utils.successResponse({ enlaces: [] });
+      }
+
+      const data = sheet.getDataRange().getValues();
+      if (data.length < 2) {
+        return Utils.successResponse({ enlaces: [] });
+      }
+
+      const headers = data[0];
+      const enlaces = Utils.rowsToObjects(data.slice(1), headers)
+        .filter(function(e) {
+          if (!e.NOMBRE && !e.URL) return false;
+          // Sólo enlaces activos (acepta true o 'TRUE')
+          return e.ACTIVO === true || e.ACTIVO === 'TRUE' || e.ACTIVO === undefined;
+        })
+        .sort(function(a, b) {
+          return (parseInt(a.ORDEN, 10) || 0) - (parseInt(b.ORDEN, 10) || 0);
+        });
+
+      return Utils.successResponse({ enlaces: enlaces });
+    } catch (error) {
+      Utils.log('EnlacesRapidos.getAll: error', error.toString());
+      return Utils.errorResponse(error.message || error.toString());
+    }
+  }
+};
+
+// ==================== MÓDULO: CONSULTA DATOS_SEACE ====================
+
+const DatosSeaceLookup = {
+  /**
+   * Busca una fila en la hoja DATOS_SEACE por nomenclatura.
+   * Retorna { success:true, datos:null } si la hoja o la fila no existen.
+   * @param {Object} params - {nomenclatura: string}
+   */
+  getByNomenclatura: function(params) {
+    try {
+      const nomenclatura = params && params.nomenclatura ? String(params.nomenclatura).trim() : '';
+      if (!nomenclatura) {
+        return Utils.errorResponse('Falta parámetro nomenclatura');
+      }
+
+      const ss = SpreadsheetApp.getActiveSpreadsheet();
+      const sheet = ss.getSheetByName(CONFIG.SHEETS.DATOS_SEACE);
+
+      if (!sheet) {
+        return Utils.successResponse({ datos: null });
+      }
+
+      const data = sheet.getDataRange().getValues();
+      if (data.length < 2) {
+        return Utils.successResponse({ datos: null });
+      }
+
+      const headers = data[0];
+      const idxNomenclatura = headers.indexOf('NOMENCLATURA');
+      if (idxNomenclatura < 0) {
+        return Utils.successResponse({ datos: null });
+      }
+
+      for (let i = 1; i < data.length; i++) {
+        if (data[i][idxNomenclatura] && String(data[i][idxNomenclatura]).trim() === nomenclatura) {
+          const registro = {};
+          headers.forEach(function(header, idx) {
+            registro[header] = data[i][idx];
+          });
+          return Utils.successResponse({ datos: registro });
+        }
+      }
+
+      return Utils.successResponse({ datos: null });
+    } catch (error) {
+      Utils.log('DatosSeaceLookup.getByNomenclatura: error', error.toString());
+      return Utils.errorResponse(error.message || error.toString());
+    }
+  }
+};
+
+// ==================== MÓDULO: ESTADO SCRAPING ====================
+
+const EstadoScraping = {
+  /**
+   * Stub: devuelve el estado del job de scraping en background.
+   * Actualmente no existe un trigger real de scraping continuo; el scraping
+   * se ejecuta on-demand desde el menú. Este endpoint existe para que el
+   * frontend pueda consultarlo sin errores.
+   */
+  get: function(params) {
+    try {
+      return Utils.successResponse({
+        activo: false,
+        ultima_actualizacion: null
+      });
+    } catch (error) {
+      Utils.log('EstadoScraping.get: error', error.toString());
+      return Utils.errorResponse(error.message || error.toString());
+    }
   }
 };
 

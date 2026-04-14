@@ -18,15 +18,13 @@ import {
 import { clsx } from 'clsx';
 
 export function AIChat() {
-  const {
-    chatAbierto,
-    setChatAbierto,
-    mensajesChat,
-    agregarMensajeChat,
-    limpiarChat,
-    procesosSeleccionados,
-    procesos
-  } = useStore();
+  const chatAbierto = useStore(s => s.chatAbierto);
+  const setChatAbierto = useStore(s => s.setChatAbierto);
+  const mensajesChat = useStore(s => s.mensajesChat);
+  const agregarMensajeChat = useStore(s => s.agregarMensajeChat);
+  const limpiarChat = useStore(s => s.limpiarChat);
+  const procesosSeleccionados = useStore(s => s.procesosSeleccionados);
+  const procesos = useStore(s => s.procesos);
 
   const [mensaje, setMensaje] = useState('');
   const [enviando, setEnviando] = useState(false);

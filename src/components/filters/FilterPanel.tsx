@@ -23,13 +23,11 @@ import { clsx } from 'clsx';
 // ==================== FILTRO PRINCIPAL SIMPLIFICADO ====================
 
 export function FilterPanel() {
-  const {
-    filtros,
-    setFiltros,
-    limpiarFiltros,
-    procesosFiltrados,
-    procesos
-  } = useStore();
+  const filtros = useStore(s => s.filtros);
+  const setFiltros = useStore(s => s.setFiltros);
+  const limpiarFiltros = useStore(s => s.limpiarFiltros);
+  const procesosFiltrados = useStore(s => s.procesosFiltrados);
+  const procesos = useStore(s => s.procesos);
 
   const [mostrarAvanzado, setMostrarAvanzado] = useState(false);
   const [inputBusqueda, setInputBusqueda] = useState(filtros.busqueda);
@@ -197,7 +195,9 @@ export function FilterPanel() {
 // ==================== SELECTOR DE REGIONES ====================
 
 function RegionSelector() {
-  const { filtros, setFiltros, regionesData } = useStore();
+  const filtros = useStore(s => s.filtros);
+  const setFiltros = useStore(s => s.setFiltros);
+  const regionesData = useStore(s => s.regionesData);
   const [abierto, setAbierto] = useState(false);
   const [busqueda, setBusqueda] = useState('');
   const ref = useRef<HTMLDivElement>(null);
@@ -325,7 +325,9 @@ function RegionSelector() {
 // ==================== SELECTOR DE ENTIDADES ====================
 
 function EntidadSelector() {
-  const { filtros, setFiltros, entidadesUnicas } = useStore();
+  const filtros = useStore(s => s.filtros);
+  const setFiltros = useStore(s => s.setFiltros);
+  const entidadesUnicas = useStore(s => s.entidadesUnicas);
   const [abierto, setAbierto] = useState(false);
   const [busqueda, setBusqueda] = useState('');
   const ref = useRef<HTMLDivElement>(null);
@@ -456,7 +458,9 @@ function EntidadSelector() {
 // ==================== INPUT DE PALABRAS CLAVE ====================
 
 function PalabrasClaveInput() {
-  const { filtros, setFiltros, filtrosPalabras } = useStore();
+  const filtros = useStore(s => s.filtros);
+  const setFiltros = useStore(s => s.setFiltros);
+  const filtrosPalabras = useStore(s => s.filtrosPalabras);
   const [input, setInput] = useState('');
 
   const sugerencias = useMemo(() => {
@@ -540,7 +544,9 @@ function PalabrasClaveInput() {
 // ==================== v3.1: FILTRO RÁPIDO DE ANTIGÜEDAD ====================
 
 function AntiguedadQuickFilter() {
-  const { filtros, setFiltros, procesos } = useStore();
+  const filtros = useStore(s => s.filtros);
+  const setFiltros = useStore(s => s.setFiltros);
+  const procesos = useStore(s => s.procesos);
 
   // Contar procesos por estado de fecha
   const conteoEstados = useMemo(() => {
@@ -600,7 +606,9 @@ function AntiguedadQuickFilter() {
 // ==================== v3.1: SELECTOR DE EMPRESA CORTA ====================
 
 function EmpresaCortaSelector() {
-  const { filtros, setFiltros, procesos } = useStore();
+  const filtros = useStore(s => s.filtros);
+  const setFiltros = useStore(s => s.setFiltros);
+  const procesos = useStore(s => s.procesos);
   const [abierto, setAbierto] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -724,7 +732,9 @@ const ESTADOS_FECHA: { valor: EstadoFechaProceso; label: string; color: string }
 ];
 
 function EstadoFechaSelector() {
-  const { filtros, setFiltros, procesos } = useStore();
+  const filtros = useStore(s => s.filtros);
+  const setFiltros = useStore(s => s.setFiltros);
+  const procesos = useStore(s => s.procesos);
 
   // Contar procesos por estado de fecha
   const conteoEstados = useMemo(() => {
@@ -789,7 +799,9 @@ function EstadoFechaSelector() {
 // ==================== v3.1: SELECTOR DE TIPO DE SERVICIO ====================
 
 function TipoServicioSelector() {
-  const { filtros, setFiltros, procesos } = useStore();
+  const filtros = useStore(s => s.filtros);
+  const setFiltros = useStore(s => s.setFiltros);
+  const procesos = useStore(s => s.procesos);
   const [abierto, setAbierto] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -906,7 +918,11 @@ function TipoServicioSelector() {
 // ==================== BARRA DE FILTROS ACTIVOS ====================
 
 export function ActiveFiltersBar() {
-  const { filtros, setFiltros, limpiarFiltros, procesosFiltrados, procesos } = useStore();
+  const filtros = useStore(s => s.filtros);
+  const setFiltros = useStore(s => s.setFiltros);
+  const limpiarFiltros = useStore(s => s.limpiarFiltros);
+  const procesosFiltrados = useStore(s => s.procesosFiltrados);
+  const procesos = useStore(s => s.procesos);
 
   const regiones = filtros?.regiones || [];
   const objetos = filtros?.objetos || [];
@@ -1067,7 +1083,8 @@ function FilterChip({ label, color, icon, onRemove }: FilterChipProps) {
 // ==================== FILTROS RÁPIDOS (PRESETS) ====================
 
 export function QuickFilters() {
-  const { setFiltros, limpiarFiltros } = useStore();
+  const setFiltros = useStore(s => s.setFiltros);
+  const limpiarFiltros = useStore(s => s.limpiarFiltros);
 
   const presets = [
     {

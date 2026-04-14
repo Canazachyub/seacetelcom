@@ -20,7 +20,8 @@ import {
   BookOpen,
   MessageSquare,
   Link2,
-  Brain
+  Brain,
+  FileSpreadsheet
 } from 'lucide-react';
 import {
   BarChart,
@@ -39,22 +40,34 @@ import {
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
 
 export function Dashboard() {
-  const {
-    estadisticas,
-    seguimiento,
-    procesos,
-    procesosFiltrados,
-    filtros,
-    setFiltros,
-    setVistaActiva
-  } = useStore();
+  const estadisticas = useStore(s => s.estadisticas);
+  const seguimiento = useStore(s => s.seguimiento);
+  const procesos = useStore(s => s.procesos);
+  const procesosFiltrados = useStore(s => s.procesosFiltrados);
+  const filtros = useStore(s => s.filtros);
+  const setFiltros = useStore(s => s.setFiltros);
+  const setVistaActiva = useStore(s => s.setVistaActiva);
 
   const [busquedaEntidad, setBusquedaEntidad] = useState('');
   const [enlacesRapidos, setEnlacesRapidos] = useState<EnlaceRapido[]>([]);
 
-  // Cargar enlaces rápidos
   useEffect(() => {
-    getEnlacesRapidos().then(setEnlacesRapidos);
+    const sheetsEstatico: EnlaceRapido = {
+      id: 'sheets-seace',
+      nombre: 'Google Sheets',
+      url: 'https://docs.google.com/spreadsheets/d/1iugkHMAW40jLYeYxkbwC4_pox2tdRTqt4bclJzjN1iM/edit',
+      categoria: 'herramienta',
+      icono: 'FileSpreadsheet',
+      color: '#0f9d58',
+      orden: 0,
+      activo: true,
+    };
+    getEnlacesRapidos()
+      .then((enlaces) => {
+        const yaExiste = enlaces.some((e) => e.id === sheetsEstatico.id || e.url === sheetsEstatico.url);
+        setEnlacesRapidos(yaExiste ? enlaces : [sheetsEstatico, ...enlaces]);
+      })
+      .catch(() => setEnlacesRapidos([sheetsEstatico]));
   }, []);
 
   // Nota: Los datos ya se cargan en App.tsx via cargarTodo()
@@ -167,6 +180,7 @@ export function Dashboard() {
       'Brain': <Brain size={20} />,
       'Link2': <Link2 size={20} />,
       'ExternalLink': <ExternalLink size={20} />,
+      'FileSpreadsheet': <FileSpreadsheet size={20} />,
     };
     return iconos[iconoNombre || ''] || <Link2 size={20} />;
   };
@@ -235,10 +249,12 @@ export function Dashboard() {
                 href={enlace.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-600 text-white font-medium text-sm transition-all hover:scale-105 hover:shadow-md"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-white font-medium text-sm transition-all hover:scale-105 hover:shadow-md"
+                style={{ backgroundColor: enlace.color || '#4b5563' }}
               >
                 {getIcono(enlace.icono)}
                 {enlace.nombre}
+                <ExternalLink size={14} className="opacity-70" />
               </a>
             ))}
           </div>

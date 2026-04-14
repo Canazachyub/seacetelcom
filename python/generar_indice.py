@@ -19,10 +19,12 @@ from datetime import datetime
 from pathlib import Path
 
 # Rutas
-BASE_DIR = Path(__file__).parent.parent  # c:\PROGRAMACION\SEACE
+BASE_DIR = Path(__file__).resolve().parent.parent
 CACHE_DIR = BASE_DIR / "data" / "cache"
 OUTPUT_DIR = BASE_DIR / "data" / "output"
-OUTPUT_FILE = OUTPUT_DIR / "OCDS_INDEX.csv"
+DEFAULT_OUTPUT_FILE = "OCDS_INDEX.csv"
+DEFAULT_OUTPUT_FILE_ALL = "OCDS_INDEX_COMPLETO.csv"
+EARLIEST_YEAR = 2021
 
 # API Config
 BASE_URL = "https://contratacionesabiertas.oece.gob.pe/api/v1"
@@ -119,19 +121,30 @@ def download_month(year: int, month: int, filter_text: str = None) -> list:
 
 def main():
     parser = argparse.ArgumentParser(description='Generar indice OCDS')
-    parser.add_argument('--all', action='store_true', help='Descargar todos los años (2021-2024)')
+    parser.add_argument('--all', action='store_true', help='Descargar todos los años desde 2021 hasta el año actual')
     parser.add_argument('--year', type=int, help='Año específico')
     parser.add_argument('--else', dest='else_mode', action='store_true', help='Solo ELSE')
     parser.add_argument('--filter', type=str, help='Filtro de texto')
+    parser.add_argument('--output', type=str, help='Nombre del archivo CSV de salida (override)')
     args = parser.parse_args()
 
     # Determinar años a procesar
+    current_year = datetime.now().year
     if args.all:
-        years = [2022, 2023, 2024, 2025]
+        years = list(range(EARLIEST_YEAR, current_year + 1))
     elif args.year:
         years = [args.year]
     else:
-        years = [2024]  # Default
+        years = [current_year]  # Default
+
+    # Determinar archivo de salida
+    if args.output:
+        output_name = args.output
+    elif args.all:
+        output_name = DEFAULT_OUTPUT_FILE_ALL
+    else:
+        output_name = DEFAULT_OUTPUT_FILE
+    output_file = OUTPUT_DIR / output_name
 
     # Determinar filtro
     filter_text = None
@@ -177,7 +190,7 @@ def main():
     # Generar CSV
     fecha_actual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-    with open(OUTPUT_FILE, 'w', newline='', encoding='utf-8-sig') as f:
+    with open(output_file, 'w', newline='', encoding='utf-8-sig') as f:
         writer = csv.writer(f)
         writer.writerow(['NOMENCLATURA', 'TENDER_ID', 'OCID', 'ENTIDAD', 'DESCRIPCION', 'FECHA_ACTUALIZACION'])
 
@@ -192,11 +205,11 @@ def main():
             ])
 
     print(f"\n{'='*60}")
-    print(f"ARCHIVO GENERADO: {OUTPUT_FILE}")
+    print(f"ARCHIVO GENERADO: {output_file}")
     print(f"TOTAL REGISTROS: {len(unique_procesos)}")
     print(f"{'='*60}")
     print("\nSIGUIENTES PASOS:")
-    print("1. Abre el archivo OCDS_INDEX.csv")
+    print(f"1. Abre el archivo {output_name}")
     print("2. Selecciona desde A2 hasta el final (NO los headers)")
     print("3. Copia (Ctrl+C)")
     print("4. Ve a Google Sheets, hoja OCDS_INDEX")

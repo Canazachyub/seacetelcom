@@ -4,9 +4,15 @@ SEACE Web Scraper - Extrae datos de fichas de seleccion
 import time
 import json
 import hashlib
+import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Dict, List, Any
+
+logger = logging.getLogger(__name__)
+
+MAX_RETRIES = 3
+RETRY_BACKOFF_BASE = 2
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -89,9 +95,23 @@ class SeaceScraper:
         self._init_driver()
 
         try:
-            # Ir al buscador
-            self.driver.get(SEACE_CONFIG["BUSCADOR_URL"])
-            time.sleep(2)
+            # Ir al buscador con retry/backoff
+            last_error = None
+            for attempt in range(MAX_RETRIES):
+                try:
+                    self.driver.get(SEACE_CONFIG["BUSCADOR_URL"])
+                    time.sleep(2)
+                    break
+                except Exception as e:
+                    last_error = e
+                    wait = RETRY_BACKOFF_BASE ** attempt
+                    logger.warning(
+                        f"Error cargando buscador (intento {attempt + 1}/{MAX_RETRIES}): {e}. "
+                        f"Reintentando en {wait}s"
+                    )
+                    time.sleep(wait)
+            else:
+                raise last_error if last_error else RuntimeError("No se pudo cargar el buscador")
 
             # Expandir busqueda avanzada
             try:
@@ -100,8 +120,8 @@ class SeaceScraper:
                 )
                 btn_avanzada.click()
                 time.sleep(1)
-            except:
-                pass  # Ya puede estar expandida
+            except Exception as e:
+                logger.warning(f"No se pudo expandir busqueda avanzada (puede estar ya expandida): {e}")
 
             # Ingresar nomenclatura
             input_nomenclatura = WebDriverWait(self.driver, 10).until(

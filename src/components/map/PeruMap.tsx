@@ -97,7 +97,9 @@ const COLOR_PALETTE = {
 };
 
 function PeruMapComponent({ className }: PeruMapProps) {
-  const { regionesData, filtros, setFiltros } = useStore();
+  const regionesData = useStore(s => s.regionesData);
+  const filtros = useStore(s => s.filtros);
+  const setFiltros = useStore(s => s.setFiltros);
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
 
   const handleRegionClick = useCallback((regionName: string) => {
@@ -331,7 +333,9 @@ export const PeruMap = memo(PeruMapComponent);
 
 // Versión compacta del mapa para el sidebar
 export function PeruMapMini({ className }: { className?: string }) {
-  const { filtros, setFiltros, regionesData } = useStore();
+  const filtros = useStore(s => s.filtros);
+  const setFiltros = useStore(s => s.setFiltros);
+  const regionesData = useStore(s => s.regionesData);
 
   const allRegions = Object.keys(DEPARTMENT_CENTERS);
 
