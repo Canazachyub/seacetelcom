@@ -1,6 +1,10 @@
 # Environment variables
 .env
 
+# Python
+__pycache__/
+*.pyc
+
 # Large cache files (exceed GitHub 100MB limit)
 data/cache/
 
