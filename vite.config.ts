@@ -10,16 +10,23 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('recharts')) return 'charts'
-            if (id.includes('react-simple-maps') || id.includes('d3-geo')) return 'maps'
             if (id.includes('xlsx')) return 'xlsx'
             if (id.includes('@google/genai')) return 'genai'
-            if (id.includes('@tanstack/react-table')) return 'table'
             if (
               id.includes('/react-dom/') ||
               id.includes('/react-router-dom/') ||
               id.includes('/react/') ||
-              id.includes('/scheduler/')
+              id.includes('/react-is/') ||
+              id.includes('/scheduler/') ||
+              id.includes('/prop-types/') ||
+              id.includes('/recharts/') ||
+              id.includes('/react-smooth/') ||
+              id.includes('/victory-vendor/') ||
+              id.includes('/react-simple-maps/') ||
+              id.includes('/d3-') ||
+              id.includes('/topojson') ||
+              id.includes('/@tanstack/react-table/') ||
+              id.includes('/react-window/')
             ) {
               return 'react-vendor'
             }
