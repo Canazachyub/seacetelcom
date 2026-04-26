@@ -84,6 +84,7 @@ function MesCell({ año, mes, count, status, lastUpdate, onScrape, isScraping }:
 export function OcdsIndexManager() {
   const [años, setAños] = useState<Record<string, AñoIndexInfo> | null>(null);
   const [loading, setLoading] = useState(false);
+  const [backendDesactualizado, setBackendDesactualizado] = useState(false);
   const [scrapingCells, setScrapingCells] = useState<Set<string>>(new Set());
 
   const cargar = useCallback(async () => {
@@ -92,11 +93,19 @@ export function OcdsIndexManager() {
       const r = await getOcdsIndexStats();
       if (r.success) {
         setAños(r.años);
+        setBackendDesactualizado(false);
+      } else if (r.error && /acci[oó]n no v[aá]lida/i.test(r.error)) {
+        setBackendDesactualizado(true);
       } else {
         toast.error(`No se pudo cargar el estado del índice${r.error ? ': ' + r.error : ''}`);
       }
     } catch (e) {
-      toast.error('Error al cargar estado: ' + (e instanceof Error ? e.message : String(e)));
+      const msg = e instanceof Error ? e.message : String(e);
+      if (/acci[oó]n no v[aá]lida/i.test(msg)) {
+        setBackendDesactualizado(true);
+      } else {
+        toast.error('Error al cargar estado: ' + msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -181,6 +190,23 @@ export function OcdsIndexManager() {
         <LegendItem color="bg-amber-100 border-amber-300" label="Sin mes asignado (datos viejos)" />
         <LegendItem color="bg-gray-100 border-gray-300" label="Sin datos en API" />
       </div>
+
+      {/* Banner: backend desactualizado */}
+      {backendDesactualizado && (
+        <div className="mx-5 mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-900">
+          <p className="font-semibold mb-1">⚠️ Apps Script desactualizado</p>
+          <p className="mb-2">
+            El backend de Google Apps Script aún no expone <code className="text-xs bg-amber-100 px-1 rounded">getOcdsIndexStats</code>.
+            Para activar este panel:
+          </p>
+          <ol className="list-decimal list-inside space-y-0.5 text-xs">
+            <li>Abrí el editor de Apps Script donde está publicada la API.</li>
+            <li>Pegá el contenido actualizado de <code className="bg-amber-100 px-1 rounded">GOOGLE_APPS_SCRIPT.js</code> del repo.</li>
+            <li>Implementar → Administrar implementaciones → Editar la activa → Nueva versión → Implementar.</li>
+            <li>Mantené el mismo deployment ID para que la URL siga funcionando.</li>
+          </ol>
+        </div>
+      )}
 
       {/* Matriz */}
       <div className="p-5 overflow-x-auto">
