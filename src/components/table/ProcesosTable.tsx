@@ -199,9 +199,26 @@ export function ProcesosTable() {
   }, []);
 
   if (procesosSorted.length === 0) {
+    const sinDatos = procesos.length === 0;
     return (
       <Card className="text-center py-12">
-        <p className="text-gray-500">No se encontraron procesos con los filtros aplicados</p>
+        <div className="max-w-md mx-auto">
+          {sinDatos ? (
+            <>
+              <p className="text-gray-700 font-medium mb-2">Todavía no se han importado procesos</p>
+              <p className="text-sm text-gray-500">
+                Usa la hoja de Google Sheets para pegar datos desde SEACE y luego ejecuta
+                <span className="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded mx-1">Procesar Import</span>
+                desde el menú del Apps Script.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-gray-700 font-medium mb-2">Ningún proceso coincide con los filtros actuales</p>
+              <p className="text-sm text-gray-500">Prueba relajando los filtros o ampliando la búsqueda.</p>
+            </>
+          )}
+        </div>
       </Card>
     );
   }
@@ -226,8 +243,8 @@ export function ProcesosTable() {
           </button>
           <span className="text-sm text-gray-600">
             {procesosSeleccionados.length > 0
-              ? `${procesosSeleccionados.length} seleccionados`
-              : `${startIndex + 1}-${Math.min(endIndex, procesosSorted.length)} de ${procesosSorted.length}`}
+              ? `${procesosSeleccionados.length} de ${procesosSorted.length.toLocaleString('es-PE')} seleccionados`
+              : `Mostrando ${startIndex + 1}–${Math.min(endIndex, procesosSorted.length).toLocaleString('es-PE')} de ${procesosSorted.length.toLocaleString('es-PE')} procesos`}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -236,9 +253,9 @@ export function ProcesosTable() {
             size="sm"
             icon={<Download size={14} />}
             onClick={exportarCSV}
-            title="Exportar procesos filtrados a CSV"
+            title={`Exportar ${procesosSorted.length.toLocaleString('es-PE')} procesos filtrados a CSV`}
           >
-            Exportar CSV
+            Exportar {procesosSorted.length.toLocaleString('es-PE')} (CSV)
           </Button>
 
           {procesosSeleccionados.length > 0 && (
@@ -259,7 +276,7 @@ export function ProcesosTable() {
                   deseleccionarTodos();
                 }}
               >
-                Agregar a seguimiento
+                Agregar {procesosSeleccionados.length} a seguimiento
               </Button>
               <Button variant="outline" size="sm">Analizar con IA</Button>
             </>

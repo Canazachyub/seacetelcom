@@ -96,3 +96,79 @@ export function formatearFechaHora(fecha: string | Date): string {
     minute: '2-digit'
   });
 }
+
+// ==================== MAPEOS DE HUMANIZACIÓN ====================
+
+/**
+ * Mapeo de siglas de empresa eléctrica a nombre completo + región.
+ * Usado para tooltips en badges que muestran EMPRESA_CORTA.
+ */
+export const EMPRESA_CORTA_MAP: Record<string, string> = {
+  'ELSE': 'Electro Sur Este S.A.A. · Cusco',
+  'HIDRANDINA': 'Hidrandina S.A. · La Libertad',
+  'ELECTRONOROESTE': 'Electronoroeste S.A. · Piura/Tumbes',
+  'ENOSA': 'Electronoroeste S.A. · Piura',
+  'ELECTROCENTRO': 'Electrocentro S.A. · Junín/Pasco',
+  'SEAL': 'Sociedad Eléctrica del Sur Oeste · Arequipa',
+  'ELECTROSUR': 'Electro Sur S.A. · Tacna/Moquegua',
+  'ELECTRO PUNO': 'Electro Puno S.A.C. · Puno',
+  'ELECTRO ORIENTE': 'Electro Oriente S.A. · Loreto',
+  'ELECTRO UCAYALI': 'Electro Ucayali S.A. · Ucayali',
+  'ADINELSA': 'Administración de Infraestructura Eléctrica S.A. · Nacional',
+  'ELECTROPERÚ': 'Electroperú S.A. · Generadora nacional',
+  'SAN GABÁN': 'San Gabán S.A. · Generadora Puno',
+  'EGASA': 'Empresa de Generación Arequipa S.A.',
+  'EGEMSA': 'Empresa de Generación Machupicchu S.A. · Cusco',
+  'EGESUR': 'Empresa de Generación Sur S.A. · Tacna',
+  'OSINERGMIN': 'Organismo Supervisor de la Inversión en Energía y Minería',
+  'COES': 'Comité de Operación Económica del Sistema',
+  'MEM': 'Ministerio de Energía y Minas',
+  'PROINVERSIÓN': 'Agencia de Promoción de la Inversión Privada',
+  'SEDAPAL': 'Servicio de Agua Potable y Alcantarillado de Lima',
+};
+
+/**
+ * Prefijos de nomenclatura SEACE a descripción humana.
+ * Ej: "CP-SM-46-2025-ELSE-1" → CP = Contratación Pública, SM = Suministro Mayor
+ */
+export const NOMENCLATURA_TAG_MAP: Record<string, string> = {
+  'CP': 'Concurso Público',
+  'LP': 'Licitación Pública',
+  'AS': 'Adjudicación Simplificada',
+  'CD': 'Contratación Directa',
+  'SIE': 'Subasta Inversa Electrónica',
+  'CM': 'Comparación de Precios',
+  'SM': 'Suministro Mayor',
+  'SO': 'Suministro Ordinario',
+  'EO': 'Ejecución de Obra',
+  'CO': 'Consultoría de Obra',
+  'SER': 'Servicio',
+  'BIEN': 'Bien',
+};
+
+/**
+ * Devuelve el nombre humano de una sigla de empresa si está en el mapeo.
+ * Fallback: la sigla original.
+ */
+export function humanizarEmpresa(sigla: string | null | undefined): string {
+  if (!sigla) return '';
+  return EMPRESA_CORTA_MAP[sigla] || sigla;
+}
+
+/**
+ * Genera un tooltip humano para una nomenclatura SEACE.
+ * Ej: "CP-SM-46-2025-ELSE-1" → "Concurso Público · Suministro Mayor · 2025 · Electro Sur Este"
+ */
+export function humanizarNomenclatura(nom: string | null | undefined): string {
+  if (!nom) return '';
+  const partes = nom.split('-');
+  const humanizadas = partes.map((p) => {
+    const tag = NOMENCLATURA_TAG_MAP[p.toUpperCase()];
+    if (tag) return tag;
+    const empresa = EMPRESA_CORTA_MAP[p.toUpperCase()];
+    if (empresa) return empresa;
+    return p;
+  });
+  return humanizadas.join(' · ');
+}
+

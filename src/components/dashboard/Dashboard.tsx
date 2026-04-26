@@ -309,13 +309,13 @@ export function Dashboard() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title={hayFiltrosActivos ? "Procesos Filtrados" : "Total Procesos"}
+          title={hayFiltrosActivos ? "Procesos filtrados" : "Procesos monitoreados"}
           value={hayFiltrosActivos ? (procesosFiltrados || []).length : statsCalculados.totalProcesos}
           icon={<FileText size={24} />}
           color="blue"
         />
         <StatCard
-          title={hayFiltrosActivos ? "Valor Filtrado" : "Valor Total"}
+          title={hayFiltrosActivos ? "Valor filtrado" : "Valor en juego"}
           value={formatearMonedaLocal(hayFiltrosActivos
             ? (procesosFiltrados || []).reduce((acc, p) => acc + (p.VALOR || 0), 0)
             : statsCalculados.valorTotal
@@ -324,13 +324,13 @@ export function Dashboard() {
           color="green"
         />
         <StatCard
-          title="Regiones"
+          title="Regiones con actividad"
           value={filtros.regiones.length > 0 ? filtros.regiones.length : Object.keys(estadisticas.porRegion || {}).length}
           icon={<MapPin size={24} />}
           color="yellow"
         />
         <StatCard
-          title="En Seguimiento"
+          title="Procesos en seguimiento"
           value={(seguimiento || []).length}
           icon={<Star size={24} />}
           color="purple"
@@ -342,8 +342,8 @@ export function Dashboard() {
         {/* Por tipo de objeto */}
         <Card>
           <CardHeader
-            title="Por Tipo de Objeto"
-            subtitle="Distribución de procesos"
+            title="Por tipo de objeto"
+            subtitle={`${dataPorObjeto.reduce((a, b) => a + b.value, 0).toLocaleString('es-PE')} procesos · ${Object.keys(statsCalculados.porObjeto || {}).length} tipos`}
             icon={<FileText size={20} />}
           />
           <div className="h-64 min-h-[256px]">
@@ -369,7 +369,7 @@ export function Dashboard() {
               </ResponsiveContainer>
             ) : (
               <div className="flex items-center justify-center h-full text-gray-400">
-                <p className="text-sm">Sin datos disponibles</p>
+                <p className="text-sm">No hay procesos publicados para mostrar</p>
               </div>
             )}
           </div>
@@ -378,8 +378,8 @@ export function Dashboard() {
         {/* Por región */}
         <Card>
           <CardHeader
-            title="Top Regiones"
-            subtitle="Regiones con más procesos"
+            title="Top regiones"
+            subtitle={`${dataTopRegiones.reduce((a, b) => a + b.value, 0).toLocaleString('es-PE')} procesos · ${dataTopRegiones.length} regiones destacadas`}
             icon={<MapPin size={20} />}
           />
           <div className="h-64 min-h-[256px]">
@@ -400,7 +400,7 @@ export function Dashboard() {
               </ResponsiveContainer>
             ) : (
               <div className="flex items-center justify-center h-full text-gray-400">
-                <p className="text-sm">Sin datos disponibles</p>
+                <p className="text-sm">No hay procesos publicados para mostrar</p>
               </div>
             )}
           </div>
@@ -412,8 +412,8 @@ export function Dashboard() {
         {/* Mapa */}
         <Card>
           <CardHeader
-            title="Mapa de Procesos"
-            subtitle="Click en una región para filtrar"
+            title="Mapa de procesos"
+            subtitle={`Haz clic en una región para filtrar · ${Object.keys(statsCalculados.porRegion || {}).length} regiones con actividad`}
             icon={<MapPin size={20} />}
           />
           <PeruMap className="h-[400px]" />
@@ -528,8 +528,8 @@ export function Dashboard() {
       {hayFiltrosActivos && (procesosFiltrados || []).length > 0 && (
         <Card>
           <CardHeader
-            title="Procesos Filtrados"
-            subtitle={`${(procesosFiltrados || []).length} procesos encontrados`}
+            title="Procesos filtrados"
+            subtitle={`Mostrando ${(procesosFiltrados || []).length.toLocaleString('es-PE')} de ${((procesos || []).length).toLocaleString('es-PE')} procesos`}
             icon={<FileText size={20} />}
           />
           <div className="overflow-x-auto">

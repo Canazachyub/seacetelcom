@@ -1079,6 +1079,89 @@ export async function actualizarIndiceOCDS(
   );
 }
 
+// ============ OCDS INDEX STATS ============
+
+export type EstadoMesIndex = 'indexed' | 'missing' | 'extra' | 'unavailable';
+
+export interface MesIndexInfo {
+  count: number;
+  lastUpdate: string | null;
+  disponibleAPI: boolean;
+  status: EstadoMesIndex;
+}
+
+export interface AñoIndexInfo {
+  total: number;
+  sinMes: number;
+  meses: Record<string, MesIndexInfo>;
+  mesesDisponiblesAPI: number[];
+}
+
+export interface OcdsIndexStats {
+  success: boolean;
+  años: Record<string, AñoIndexInfo>;
+  error?: string;
+}
+
+/**
+ * Lee el OCDS_INDEX y compara contra el API (qué meses están disponibles).
+ * Devuelve una matriz año × mes con status por celda.
+ */
+export async function getOcdsIndexStats(): Promise<OcdsIndexStats> {
+  return fetchAPI<OcdsIndexStats>('getOcdsIndexStats', {});
+}
+
+// ============ BUSCADOR DE HISTÓRICOS ============
+
+export interface HistoricoCandidato {
+  nomenclatura: string;
+  entidad: string;
+  descripcion: string;
+  valor: number;
+  fecha: string;
+  año: number;
+  empresaCorta: string;
+  tipoServicio: string;
+  score: number;
+  matchedKeywords: string[];
+  /** Score del LLM (0-100) después de re-rankear. Se agrega en el cliente. */
+  llmScore?: number;
+  /** Explicación del LLM de por qué el candidato es o no histórico. */
+  llmRazon?: string;
+}
+
+export interface BuscarHistoricosResponse {
+  success: boolean;
+  target: {
+    nomenclatura: string | null;
+    entidad: string;
+    descripcion: string;
+    empresaCorta: string;
+    tipoServicio: string;
+    año: number;
+  };
+  keywordsExtraidos: string[];
+  totalCandidatos: number;
+  candidatos: HistoricoCandidato[];
+  error?: string;
+}
+
+/**
+ * Busca candidatos históricos para un proceso target en BD_PROCESOS.
+ * El backend devuelve top-N ordenado por score keyword + classificación.
+ * El re-ranking semántico con LLM lo hace el cliente (DeepSeek).
+ */
+export async function buscarHistoricosCandidatos(
+  nomenclatura: string,
+  opciones?: { descripcion?: string; entidad?: string; limit?: number }
+): Promise<BuscarHistoricosResponse> {
+  const params: Record<string, string> = { nomenclatura };
+  if (opciones?.descripcion) params.descripcion = opciones.descripcion;
+  if (opciones?.entidad) params.entidad = opciones.entidad;
+  if (opciones?.limit) params.limit = String(opciones.limit);
+  return fetchAPI<BuscarHistoricosResponse>('buscarHistoricosCandidatos', params);
+}
+
 // Sincronizar un histórico individual con OCDS
 export async function sincronizarHistoricoIndividual(
   nomenclatura: string
@@ -1594,4 +1677,150 @@ export async function getEnlacesRapidos(): Promise<EnlaceRapido[]> {
     console.log('📎 Usando enlaces rápidos por defecto');
     return ENLACES_DEFAULT;
   }
+}
+
+// ==================== DIAGNÓSTICO ====================
+
+export interface HealthCheckItem {
+  grupo: string;
+  nombre: string;
+  ok: boolean;
+  detalle: string;
+  meta?: Record<string, unknown>;
+}
+
+export interface HealthCheckResponse {
+  success: boolean;
+  checks: HealthCheckItem[];
+  totalChecks: number;
+  pasadas: number;
+  duracion: string;
+  error?: string;
+}
+
+/** Valida que el backend responde y cada hoja/integración está OK. */
+export async function healthCheck(): Promise<HealthCheckResponse> {
+  try {
+    return await fetchAPI<HealthCheckResponse>('healthCheck', {});
+  } catch (error) {
+    return {
+      success: false,
+      checks: [],
+      totalChecks: 0,
+      pasadas: 0,
+      duracion: '0ms',
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+/** Debug: muestra qué ve cada estrategia de búsqueda para una nomenclatura en OCDS_INDEX. */
+export async function debugBuscarIndice(nomenclatura: string): Promise<Record<string, unknown>> {
+  return fetchAPI<Record<string, unknown>>('debugBuscarIndice', { nomenclatura });
+}
+
+// ============ GRUPOS HISTÓRICOS CON STATS (Fase 1.5) ============
+
+export type EstadoScraping = 'pendiente' | 'en_proceso' | 'completo' | 'error';
+
+export interface GrupoStats {
+  totalHistoricos: number;
+  montoMinimo: number;
+  montoMaximo: number;
+  montoMedia: number;
+  añoMinimo: number;
+  añoMaximo: number;
+  scrapeados: number;
+  pendientes: number;
+  conError: number;
+}
+
+export interface GrupoConStats {
+  idGrupo: string;
+  nomenclaturaActual: string;
+  nomenclaturasHistoricos: string[];
+  fechaCreacion: string;
+  notas: string;
+  stats: GrupoStats;
+}
+
+export interface HistoricoScrapingInfo {
+  estado: EstadoScraping;
+  fechaScraping: string | null;
+  urlSeace: string | null;
+  numPdfs: number;
+  numPostores: number;
+  error: string | null;
+}
+
+export interface HistoricoDetalle {
+  nomenclatura: string;
+  descripcion: string;
+  entidad: string;
+  valor: number;
+  fechaPub: string;
+  tipoServicio: string;
+  empresaCorta: string;
+  scraping: HistoricoScrapingInfo;
+}
+
+export interface GrupoDetalleResponse {
+  success: boolean;
+  idGrupo: string;
+  nomenclaturaActual: string;
+  notas: string;
+  fechaCreacion: string;
+  historicos: HistoricoDetalle[];
+  error?: string;
+}
+
+export interface ListarGruposResponse {
+  success: boolean;
+  grupos: GrupoConStats[];
+  error?: string;
+}
+
+export interface EstadoScrapingItem {
+  nomenclatura: string;
+  estado: EstadoScraping;
+  fechaScraping: string | null;
+  error: string | null;
+}
+
+export interface EstadoScrapingGrupoResponse {
+  success: boolean;
+  idGrupo: string;
+  totalHistoricos: number;
+  estados: EstadoScrapingItem[];
+  error?: string;
+}
+
+/**
+ * Lista todos los grupos históricos con stats agregadas (montos min/máx/media,
+ * rango de años, estado de scraping cruzado con DATOS_SEACE).
+ */
+export async function listarGruposConStats(
+  filtroActual?: string
+): Promise<ListarGruposResponse> {
+  const params: Record<string, string> = {};
+  if (filtroActual) params.filterByActual = filtroActual;
+  return fetchAPI<ListarGruposResponse>('listarGruposConStats', params);
+}
+
+/**
+ * Trae el detalle completo de un grupo: cada histórico con data de BD_PROCESOS
+ * (descripción, entidad, valor) + estado de scraping de DATOS_SEACE.
+ */
+export async function getDetalleGrupo(idGrupo: string): Promise<GrupoDetalleResponse> {
+  return fetchAPI<GrupoDetalleResponse>('getDetalleGrupo', { idGrupo });
+}
+
+/**
+ * Versión liviana: solo estado de scraping por histórico.
+ * Útil para polling en tiempo real (cada 10s) sin traer data pesada.
+ */
+export async function getEstadoScrapingGrupo(
+  idGrupo: string
+): Promise<EstadoScrapingGrupoResponse> {
+  return fetchAPI<EstadoScrapingGrupoResponse>('getEstadoScrapingGrupo', { idGrupo });
 }

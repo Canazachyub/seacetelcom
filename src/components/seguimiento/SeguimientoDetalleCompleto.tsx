@@ -5,8 +5,10 @@ import {
   Edit2, Save, X, Plus, ChevronDown, ChevronUp, Info, Eye
 } from 'lucide-react';
 import * as api from '../../services/api';
+import { deepseekService } from '../../services/deepseek';
 import { geminiService } from '../../services/gemini';
 import { FileUploader } from '../ui/FileUploader';
+import { toast } from '../ui/Toast';
 import type { ProcesoDetalleCompleto, CronogramaEtapa, UploadResult } from '../../types';
 
 // Función para convertir markdown a HTML con soporte para tablas
@@ -179,12 +181,12 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
     const imageFiles = files.filter(f => f.type.startsWith('image/'));
 
     if (imageFiles.length === 0) {
-      alert('Por favor selecciona solo archivos de imagen');
+      toast.warning('Por favor selecciona solo archivos de imagen (PNG, JPG, WEBP).');
       return;
     }
 
     if (imageFiles.length > 3) {
-      alert('Máximo 3 imágenes por vez');
+      toast.warning('Solo puedes procesar 3 imágenes por vez. Se usarán las primeras 3.');
       setSelectedImages(imageFiles.slice(0, 3));
     } else {
       setSelectedImages(imageFiles);
@@ -193,7 +195,7 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
 
   const handleExtractWithIA = async () => {
     if (selectedImages.length === 0) {
-      alert('Debes seleccionar al menos una imagen');
+      toast.warning('Selecciona al menos una imagen para extraer datos.');
       return;
     }
 
@@ -239,7 +241,7 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
       console.log('📦 Respuesta del backend:', resultado);
 
       if (resultado.success) {
-        alert(`✅ Datos extraídos y guardados correctamente!\n${resultado.accion === 'actualizado' ? 'Registro actualizado' : 'Nuevo registro agregado'}`);
+        toast.success(resultado.accion === 'actualizado' ? 'Histórico actualizado correctamente.' : 'Histórico agregado correctamente.');
 
         // Limpiar selección y recargar datos
         setSelectedImages([]);
@@ -250,7 +252,7 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
       } else {
         const errorMsg = resultado.error || resultado.mensaje || 'No se pudo guardar';
         console.error('❌ Error del backend:', errorMsg);
-        alert(`❌ Error al guardar:\n${errorMsg}`);
+        toast.error(`No se pudo guardar: ${errorMsg}`);
       }
 
     } catch (error: any) {
@@ -271,7 +273,7 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
         }
       }
 
-      alert(`❌ Error:\n${errorMessage}\n\nRevisa la consola del navegador (F12) para más detalles.`);
+      toast.error(`${errorMessage}. Revisa la consola (F12) para más detalles.`);
     } finally {
       setUploadingIA(false);
     }
@@ -285,12 +287,12 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
     const imageFiles = files.filter(f => f.type.startsWith('image/'));
 
     if (imageFiles.length === 0) {
-      alert('Por favor arrastra solo archivos de imagen');
+      toast.warning('Arrastra solo archivos de imagen (PNG, JPG, WEBP).');
       return;
     }
 
     if (imageFiles.length > 3) {
-      alert('Máximo 3 imágenes por vez');
+      toast.warning('Solo puedes procesar 3 imágenes por vez. Se usarán las primeras 3.');
       setSelectedImages(imageFiles.slice(0, 3));
     } else {
       setSelectedImages(imageFiles);
@@ -309,11 +311,11 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
   // Importar datos desde JSON
   const handleImportJSON = async () => {
     if (!nomenclaturaSeleccionada) {
-      alert('Selecciona un proceso histórico primero');
+      toast.warning('Selecciona un proceso histórico de la lista antes de importar.');
       return;
     }
     if (!jsonInput.trim()) {
-      alert('Pega el JSON con los datos');
+      toast.warning('Pega el JSON con los datos del proceso histórico.');
       return;
     }
 
@@ -324,7 +326,7 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
       try {
         datos = JSON.parse(jsonInput);
       } catch {
-        alert('❌ JSON inválido. Verifica el formato.');
+        toast.error('El formato JSON no es válido. Revisa comillas, corchetes y comas.');
         setImportandoJson(false);
         return;
       }
@@ -358,16 +360,16 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
       const resultado = await api.guardarHistoricoExtraidoIA(datosParaGuardar);
 
       if (resultado.success) {
-        alert(`✅ Datos importados correctamente para ${nomenclaturaSeleccionada}`);
+        toast.success(`Datos importados para ${nomenclaturaSeleccionada}.`);
         setJsonInput('');
         setNomenclaturaSeleccionada('');
         await cargarDetalleCompleto();
       } else {
-        alert(`❌ Error: ${resultado.error || 'No se pudo guardar'}`);
+        toast.error(resultado.error || 'No se pudo guardar.');
       }
     } catch (error: any) {
       console.error('Error importando JSON:', error);
-      alert(`❌ Error: ${error.message || 'Error desconocido'}`);
+      toast.error(error.message || 'Error desconocido al importar JSON.');
     } finally {
       setImportandoJson(false);
     }
@@ -451,7 +453,7 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
       setEtapaEditData(null);
     } catch (error) {
       console.error('Error guardando etapa:', error);
-      alert('Error al guardar la etapa');
+      toast.error('No se pudo guardar los cambios de la etapa. Intenta nuevamente.');
     } finally {
       setGuardando(false);
     }
@@ -460,7 +462,7 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
   // Handlers para documentos
   const agregarDocumento = async () => {
     if (!nuevoDoc.nombreArchivo || !nuevoDoc.urlArchivo) {
-      alert('Nombre de archivo y URL son requeridos');
+      toast.warning('Completa el nombre del archivo y su enlace para continuar.');
       return;
     }
 
@@ -489,7 +491,7 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
       await cargarDetalleCompleto();
     } catch (error) {
       console.error('Error agregando documento:', error);
-      alert('Error al agregar documento');
+      toast.error('No se pudo agregar el documento. Intenta nuevamente.');
     } finally {
       setGuardando(false);
     }
@@ -498,7 +500,7 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
   // Handlers para postores
   const agregarPostor = async () => {
     if (!nuevoPostor.ruc || !nuevoPostor.razonSocial) {
-      alert('RUC y Razón Social son requeridos');
+      toast.warning('Ingresa el RUC y la Razón Social para registrar el postor.');
       return;
     }
 
@@ -513,7 +515,7 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
       );
 
       if (resultado.success) {
-        alert('✅ Postor agregado correctamente');
+        toast.success('Postor registrado correctamente.');
         setNuevoPostor({
           ruc: '',
           razonSocial: '',
@@ -523,11 +525,11 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
         setMostrarFormPostor(false);
         await cargarDetalleCompleto();
       } else {
-        alert(`❌ Error: ${resultado.error || 'No se pudo agregar el postor'}`);
+        toast.error(resultado.error || 'No se pudo agregar el postor.');
       }
     } catch (error) {
       console.error('Error agregando postor:', error);
-      alert('Error al agregar postor');
+      toast.error('No se pudo agregar el postor. Intenta nuevamente.');
     } finally {
       setGuardando(false);
     }
@@ -536,7 +538,7 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
   // Handler para histórico manual
   const guardarHistoricoManual = async () => {
     if (!historicopManual.año || !historicopManual.entidad) {
-      alert('Año y Entidad son campos requeridos');
+      toast.warning('Ingresa el año y la entidad para guardar el histórico.');
       return;
     }
 
@@ -562,7 +564,7 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
       const resultado = await api.guardarHistoricoExtraidoIA(datosHistorico);
 
       if (resultado.success) {
-        alert(`✅ Histórico guardado correctamente!\n${resultado.accion === 'actualizado' ? 'Registro actualizado' : 'Nuevo registro agregado'}`);
+        toast.success(resultado.accion === 'actualizado' ? 'Histórico actualizado correctamente.' : 'Histórico agregado correctamente.');
 
         // Resetear form
         setHistoricoManual({
@@ -582,11 +584,11 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
         setModoHistorico('ai');
         await cargarDetalleCompleto();
       } else {
-        alert(`❌ Error: ${resultado.error || 'No se pudo guardar'}`);
+        toast.error(resultado.error || 'No se pudo guardar.');
       }
     } catch (error: any) {
       console.error('Error guardando histórico manual:', error);
-      alert(`❌ Error: ${error.message || 'Error al guardar'}`);
+      toast.error(error.message || 'Error al guardar el histórico.');
     } finally {
       setGuardando(false);
     }
@@ -595,7 +597,7 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
   // Generar análisis comparativo con IA
   const generarAnalisisComparativo = async () => {
     if (!proceso?.historicos || proceso.historicos.length === 0) {
-      alert('No hay históricos para analizar');
+      toast.warning('No hay históricos cargados para generar el análisis.');
       return;
     }
 
@@ -611,7 +613,7 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
         return;
       }
 
-      const analisis = await geminiService.generarAnalisisComparativoHistoricos(historicosConDatos);
+      const analisis = await deepseekService.generarAnalisisComparativoHistoricos(historicosConDatos);
       setAnalisisIA(analisis);
       console.log('✅ Análisis generado correctamente');
     } catch (error: any) {
@@ -1026,7 +1028,7 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
                 onUploadComplete={(results: UploadResult[]) => {
                   const exitosos = results.filter(r => r.success).length;
                   if (exitosos > 0) {
-                    alert(`${exitosos} documento(s) subido(s) correctamente`);
+                    toast.success(`${exitosos} documento${exitosos > 1 ? 's' : ''} subido${exitosos > 1 ? 's' : ''} correctamente.`);
                     cargarDetalleCompleto();
                   }
                 }}
@@ -1192,7 +1194,7 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
                 onUploadComplete={(results: UploadResult[]) => {
                   const exitosos = results.filter(r => r.success).length;
                   if (exitosos > 0) {
-                    alert(`${exitosos} archivo(s) subido(s) correctamente`);
+                    toast.success(`${exitosos} archivo${exitosos > 1 ? 's' : ''} subido${exitosos > 1 ? 's' : ''} correctamente.`);
                     cargarDetalleCompleto();
                   }
                 }}
@@ -1514,7 +1516,7 @@ export const SeguimientoDetalleCompleto: React.FC<SeguimientoDetalleCompletoProp
                                               onUploadComplete={(results: UploadResult[]) => {
                                                 const exitosos = results.filter(r => r.success).length;
                                                 if (exitosos > 0) {
-                                                  alert(`${exitosos} documento(s) subido(s) para ${hist.NOMENCLATURA}`);
+                                                  toast.success(`${exitosos} documento${exitosos > 1 ? 's' : ''} subido${exitosos > 1 ? 's' : ''} para ${hist.NOMENCLATURA}.`);
                                                   cargarDetalleCompleto();
                                                 }
                                               }}

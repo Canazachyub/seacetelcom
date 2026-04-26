@@ -52,19 +52,33 @@ const CONFIG = {
 
   // Configuración de API OCDS (Open Contracting Data Standard)
   // Documentación: https://contratacionesabiertas.oece.gob.pe/api
+  //
+  // IMPORTANTE: La API oficial (oece.gob.pe) tiene un WAF que bloquea
+  // con HTTP 403 todas las peticiones desde IPs de Google Apps Script.
+  // Por eso usamos un Cloudflare Worker como proxy transparente —
+  // mismo path, solo cambia el host. El Worker reenvía a oece.gob.pe
+  // desde IPs de Cloudflare (no bloqueadas) con headers de navegador real.
+  //
+  // Código del Worker: ver instrucciones en README. La URL del Worker
+  // debe apuntar al mismo path /api/v1 del backend original.
   OCDS_API: {
-    BASE_URL: 'https://contratacionesabiertas.oece.gob.pe/api/v1',
+    BASE_URL: 'https://visitor-organizing-mortgages-defence.trycloudflare.com',
     // Endpoints según documentación oficial
     RELEASES_ENDPOINT: '/releases',           // GET - búsqueda con criterios
     RELEASE_BY_ID: '/release',                // GET /release/{sourceId}/{tenderId}
     RECORDS_ENDPOINT: '/records',             // GET - búsqueda de records
     RECORD_BY_ID: '/record',                  // GET /record/{sourceId}/{tenderId}
     FILES_ENDPOINT: '/files',                 // GET - descargas masivas
-    // sourceId puede ser: seace_v3 o seace_v2
-    SOURCE_V3: 'seace_v3',
-    SOURCE_V2: 'seace_v2',
+    // sourceId correcto según OCIDs reales observados: "seacev3" / "seacev2"
+    // (sin guion bajo). El naming "seace_v3" del API antiguo no existe en este endpoint.
+    SOURCE_V3: 'seacev3',
+    SOURCE_V2: 'seacev2',
     RATE_LIMIT_MS: 1000,
-    MAX_RETRIES: 3
+    MAX_RETRIES: 3,
+    // User-Agent de navegador real para evadir WAF que bloquea UAs custom.
+    // Algunos WAFs de sitios gubernamentales peruanos tienen allowlists de
+    // Mozilla/Chrome y devuelven 403 a UAs identificables como bots/scripts.
+    BROWSER_UA: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
   }
 };
 
@@ -694,6 +708,9 @@ const Router = {
       'getGruposHistoricos': { handler: GruposHistoricos.getAll, method: 'GET' },
       'getGrupoHistorico': { handler: GruposHistoricos.get, method: 'GET' },
       'getGrupoByNomenclatura': { handler: GruposHistoricos.getByNomenclatura, method: 'GET' },
+      'listarGruposConStats': { handler: GruposHistoricos.listarConStats, method: 'GET' },
+      'getDetalleGrupo': { handler: GruposHistoricos.getDetalle, method: 'GET' },
+      'getEstadoScrapingGrupo': { handler: GruposHistoricos.getEstadoScraping, method: 'GET' },
 
       // === OCDS API (Consulta en tiempo real) ===
       'getProcesoOCDS': { handler: OCDS_API.getProceso, method: 'GET' },
@@ -742,6 +759,7 @@ const Router = {
 
       // === OCDS INDEX ===
       'actualizarIndiceOCDS': { handler: OCDS_INDEX.actualizar, method: 'ANY' },
+      'getOcdsIndexStats': { handler: OCDS_INDEX.stats, method: 'GET' },
 
       // === v2.0: EMPRESAS ELÉCTRICAS ===
       'getEmpresasElectricas': { handler: EmpresasElectricas.getAll, method: 'GET' },
@@ -758,7 +776,15 @@ const Router = {
       // === v3.2: ENLACES RÁPIDOS Y SCRAPING SEACE (stubs/lecturas ligeras) ===
       'getEnlacesRapidos': { handler: EnlacesRapidos.getAll, method: 'GET' },
       'getDatosSeace': { handler: DatosSeaceLookup.getByNomenclatura, method: 'GET' },
-      'getEstadoScraping': { handler: EstadoScraping.get, method: 'GET' }
+      'guardarDatosSeace': { handler: DatosSeaceLookup.guardar, method: 'ANY' },
+      'getEstadoScraping': { handler: EstadoScraping.get, method: 'GET' },
+
+      // === BUSCADOR DE HISTÓRICOS ===
+      'buscarHistoricosCandidatos': { handler: Historicos.buscarCandidatos, method: 'GET' },
+
+      // === DIAGNÓSTICO DEL SISTEMA ===
+      'healthCheck': { handler: Diagnostico.healthCheck, method: 'GET' },
+      'debugBuscarIndice': { handler: Diagnostico.debugBuscarIndice, method: 'GET' }
     };
 
     const route = routes[action];
@@ -2491,35 +2517,14 @@ const GruposHistoricos = {
       }
     }
 
-    // Crear carpeta de grupo con estructura por años
-    let carpetaInfo = { url: '', error: null };
-    try {
-      // Agrupar históricos por año
-      const historicosPorAño = GruposHistoricos._agruparPorAño(nomenclaturas);
-
-      const carpetaResult = Drive.crearCarpetaGrupoHistorico({
-        nomenclaturaActual: params.nomenclaturaActual,
-        entidad: params.entidad || '',
-        historicosPorAño: JSON.stringify(historicosPorAño)
-      });
-
-      if (carpetaResult.success) {
-        carpetaInfo.url = carpetaResult.url;
-      } else {
-        carpetaInfo.error = carpetaResult.error;
-      }
-    } catch(e) {
-      carpetaInfo.error = 'Error Drive: ' + e.toString();
-    }
-
-    // Insertar en hoja
+    // Insertar en hoja (sin carpeta Drive — Fase 1.5)
     sheet.appendRow([
       idGrupo,
       params.nomenclaturaActual,
       JSON.stringify(nomenclaturas),
       new Date(),
       params.notas || '',
-      carpetaInfo.url
+      ''
     ]);
 
     // Actualizar SEGUIMIENTO con el ID del grupo
@@ -2530,9 +2535,7 @@ const GruposHistoricos = {
     }
 
     return Utils.successResponse({
-      idGrupo: idGrupo,
-      carpetaUrl: carpetaInfo.url,
-      driveError: carpetaInfo.error
+      idGrupo: idGrupo
     }, 'Grupo histórico creado correctamente');
   },
 
@@ -2585,6 +2588,287 @@ const GruposHistoricos = {
     }
 
     return Utils.errorResponse('Grupo no encontrado');
+  },
+
+  /**
+   * Lista todos los grupos históricos enriquecidos con estadísticas:
+   * montos (de BD_PROCESOS) y estado de scraping (de DATOS_SEACE).
+   * @param {Object} params - { filterByActual?: string }
+   */
+  listarConStats: function(params) {
+    params = params || {};
+    const filterByActual = params.filterByActual ? String(params.filterByActual).trim() : '';
+
+    // 1) Cargar grupos
+    const grupos = GruposHistoricos.getAll();
+
+    // 2) Construir índice NOMENCLATURA -> fila BD_PROCESOS (para valores de referencia)
+    const bdSheet = Utils.getSheetSafe(CONFIG.SHEETS.BD);
+    const bdIndex = {};
+    if (bdSheet) {
+      const bdData = bdSheet.getDataRange().getValues();
+      for (let i = 1; i < bdData.length; i++) {
+        const nom = bdData[i][BD_COLS.NOMENCLATURA];
+        if (nom) {
+          bdIndex[String(nom).trim()] = {
+            valor: Number(bdData[i][BD_COLS.VALOR]) || 0
+          };
+        }
+      }
+    }
+
+    // 3) Construir índice NOMENCLATURA -> estado scraping desde DATOS_SEACE
+    const seaceSheet = Utils.getSheetSafe(CONFIG.SHEETS.DATOS_SEACE);
+    const seaceIndex = {};
+    if (seaceSheet) {
+      const seaceData = seaceSheet.getDataRange().getValues();
+      if (seaceData.length >= 2) {
+        const seaceHeaders = seaceData[0];
+        const idxNom = seaceHeaders.indexOf('NOMENCLATURA');
+        const idxEstado = seaceHeaders.indexOf('ESTADO_SCRAPING');
+        if (idxNom >= 0 && idxEstado >= 0) {
+          for (let i = 1; i < seaceData.length; i++) {
+            const nom = seaceData[i][idxNom];
+            if (nom) {
+              seaceIndex[String(nom).trim()] = String(seaceData[i][idxEstado] || '').trim().toLowerCase();
+            }
+          }
+        }
+      }
+    }
+
+    // 4) Enriquecer cada grupo con stats
+    const resultado = grupos
+      .filter(function(g) {
+        if (!filterByActual) return true;
+        return g.NOMENCLATURA_ACTUAL === filterByActual;
+      })
+      .map(function(g) {
+        const nomenclaturas = Array.isArray(g.NOMENCLATURAS_HISTORICOS) ? g.NOMENCLATURAS_HISTORICOS : [];
+
+        // Stats de montos
+        const valoresRef = nomenclaturas.map(function(n) {
+          const info = bdIndex[String(n).trim()];
+          return info ? info.valor : 0;
+        });
+        const positivos = valoresRef.filter(function(v) { return v > 0; });
+        let montoMinimo = 0, montoMaximo = 0, montoMedia = 0;
+        if (positivos.length > 0) {
+          montoMinimo = Math.min.apply(null, positivos);
+          montoMaximo = Math.max.apply(null, positivos);
+          const suma = positivos.reduce(function(acc, v) { return acc + v; }, 0);
+          montoMedia = suma / positivos.length;
+        }
+
+        // Rango de años (regex -20XX-)
+        const años = [];
+        nomenclaturas.forEach(function(n) {
+          const m = String(n).match(/-(20\d{2})-/);
+          if (m) años.push(parseInt(m[1], 10));
+        });
+        const añoMinimo = años.length ? Math.min.apply(null, años) : null;
+        const añoMaximo = años.length ? Math.max.apply(null, años) : null;
+
+        // Stats de scraping
+        let scrapeados = 0, pendientes = 0, conError = 0;
+        nomenclaturas.forEach(function(n) {
+          const estado = seaceIndex[String(n).trim()];
+          if (estado === 'completo') scrapeados++;
+          else if (estado === 'error') conError++;
+          else pendientes++; // incluye 'pendiente' y ausente
+        });
+
+        return {
+          idGrupo: g.ID_GRUPO,
+          nomenclaturaActual: g.NOMENCLATURA_ACTUAL,
+          nomenclaturasHistoricos: nomenclaturas,
+          fechaCreacion: g.FECHA_CREACION,
+          notas: g.NOTAS || '',
+          stats: {
+            totalHistoricos: nomenclaturas.length,
+            valoresRef: valoresRef,
+            montoMinimo: montoMinimo,
+            montoMaximo: montoMaximo,
+            montoMedia: montoMedia,
+            añoMinimo: añoMinimo,
+            añoMaximo: añoMaximo,
+            scrapeados: scrapeados,
+            pendientes: pendientes,
+            conError: conError
+          }
+        };
+      });
+
+    return Utils.successResponse({ grupos: resultado });
+  },
+
+  /**
+   * Devuelve el detalle completo de un grupo: info + histórico con datos
+   * de BD_PROCESOS y estado de scraping desde DATOS_SEACE.
+   * @param {Object} params - { idGrupo: string }
+   */
+  getDetalle: function(params) {
+    Utils.validateParams(params, ['idGrupo']);
+
+    const grupos = GruposHistoricos.getAll();
+    const grupo = grupos.find(function(g) { return g.ID_GRUPO === params.idGrupo; });
+    if (!grupo) {
+      return Utils.errorResponse('Grupo no encontrado');
+    }
+
+    const nomenclaturas = Array.isArray(grupo.NOMENCLATURAS_HISTORICOS) ? grupo.NOMENCLATURAS_HISTORICOS : [];
+
+    // Índice BD_PROCESOS
+    const bdSheet = Utils.getSheetSafe(CONFIG.SHEETS.BD);
+    const bdIndex = {};
+    if (bdSheet) {
+      const bdData = bdSheet.getDataRange().getValues();
+      for (let i = 1; i < bdData.length; i++) {
+        const nom = bdData[i][BD_COLS.NOMENCLATURA];
+        if (nom) {
+          bdIndex[String(nom).trim()] = {
+            descripcion: bdData[i][BD_COLS.DESCRIPCION] || '',
+            entidad: bdData[i][BD_COLS.ENTIDAD] || '',
+            valor: Number(bdData[i][BD_COLS.VALOR]) || 0,
+            fecha_pub: bdData[i][BD_COLS.FECHA_PUB] || '',
+            tipo_servicio: bdData[i][BD_COLS.TIPO_SERVICIO] || '',
+            empresa_corta: bdData[i][BD_COLS.EMPRESA_CORTA] || ''
+          };
+        }
+      }
+    }
+
+    // Índice DATOS_SEACE (registro completo por nomenclatura)
+    const seaceSheet = Utils.getSheetSafe(CONFIG.SHEETS.DATOS_SEACE);
+    const seaceIndex = {};
+    if (seaceSheet) {
+      const seaceData = seaceSheet.getDataRange().getValues();
+      if (seaceData.length >= 2) {
+        const seaceHeaders = seaceData[0];
+        const idxNom = seaceHeaders.indexOf('NOMENCLATURA');
+        if (idxNom >= 0) {
+          for (let i = 1; i < seaceData.length; i++) {
+            const nom = seaceData[i][idxNom];
+            if (nom) {
+              const reg = {};
+              seaceHeaders.forEach(function(h, idx) { reg[h] = seaceData[i][idx]; });
+              seaceIndex[String(nom).trim()] = reg;
+            }
+          }
+        }
+      }
+    }
+
+    const historicos = nomenclaturas.map(function(n) {
+      const key = String(n).trim();
+      const bd = bdIndex[key] || {};
+      const seace = seaceIndex[key];
+
+      let scraping;
+      if (!seace) {
+        scraping = { estado: 'pendiente' };
+      } else {
+        let numPdfs = 0, numPostores = 0;
+        try {
+          const docs = seace.DOCUMENTOS_JSON ? JSON.parse(seace.DOCUMENTOS_JSON) : [];
+          numPdfs = Array.isArray(docs) ? docs.length : 0;
+        } catch(e) { numPdfs = 0; }
+        try {
+          const posts = seace.POSTORES_JSON ? JSON.parse(seace.POSTORES_JSON) : [];
+          numPostores = Array.isArray(posts) ? posts.length : 0;
+        } catch(e) { numPostores = 0; }
+
+        scraping = {
+          estado: String(seace.ESTADO_SCRAPING || 'pendiente').trim().toLowerCase(),
+          fechaScraping: seace.FECHA_SCRAPING || null,
+          urlSeace: seace.URL_SEACE || '',
+          numPdfs: numPdfs,
+          numPostores: numPostores,
+          error: seace.ERROR_MENSAJE || ''
+        };
+      }
+
+      return {
+        nomenclatura: n,
+        descripcion: bd.descripcion || '',
+        entidad: bd.entidad || '',
+        valor: bd.valor || 0,
+        fecha_pub: bd.fecha_pub || '',
+        tipo_servicio: bd.tipo_servicio || '',
+        empresa_corta: bd.empresa_corta || '',
+        scraping: scraping
+      };
+    });
+
+    return Utils.successResponse({
+      idGrupo: grupo.ID_GRUPO,
+      nomenclaturaActual: grupo.NOMENCLATURA_ACTUAL,
+      notas: grupo.NOTAS || '',
+      fechaCreacion: grupo.FECHA_CREACION,
+      historicos: historicos
+    });
+  },
+
+  /**
+   * Versión liviana de getDetalle: solo estados de scraping por histórico.
+   * Útil para polling de progreso en tiempo real.
+   * @param {Object} params - { idGrupo: string }
+   */
+  getEstadoScraping: function(params) {
+    Utils.validateParams(params, ['idGrupo']);
+
+    const grupos = GruposHistoricos.getAll();
+    const grupo = grupos.find(function(g) { return g.ID_GRUPO === params.idGrupo; });
+    if (!grupo) {
+      return Utils.errorResponse('Grupo no encontrado');
+    }
+
+    const nomenclaturas = Array.isArray(grupo.NOMENCLATURAS_HISTORICOS) ? grupo.NOMENCLATURAS_HISTORICOS : [];
+
+    // Índice liviano DATOS_SEACE
+    const seaceSheet = Utils.getSheetSafe(CONFIG.SHEETS.DATOS_SEACE);
+    const seaceIndex = {};
+    if (seaceSheet) {
+      const seaceData = seaceSheet.getDataRange().getValues();
+      if (seaceData.length >= 2) {
+        const seaceHeaders = seaceData[0];
+        const idxNom = seaceHeaders.indexOf('NOMENCLATURA');
+        const idxEstado = seaceHeaders.indexOf('ESTADO_SCRAPING');
+        const idxFecha = seaceHeaders.indexOf('FECHA_SCRAPING');
+        const idxError = seaceHeaders.indexOf('ERROR_MENSAJE');
+        if (idxNom >= 0) {
+          for (let i = 1; i < seaceData.length; i++) {
+            const nom = seaceData[i][idxNom];
+            if (nom) {
+              seaceIndex[String(nom).trim()] = {
+                estado: idxEstado >= 0 ? String(seaceData[i][idxEstado] || 'pendiente').trim().toLowerCase() : 'pendiente',
+                fechaScraping: idxFecha >= 0 ? seaceData[i][idxFecha] : null,
+                error: idxError >= 0 ? (seaceData[i][idxError] || '') : ''
+              };
+            }
+          }
+        }
+      }
+    }
+
+    const estados = nomenclaturas.map(function(n) {
+      const info = seaceIndex[String(n).trim()];
+      if (!info) {
+        return { nomenclatura: n, estado: 'pendiente', fechaScraping: null, error: '' };
+      }
+      return {
+        nomenclatura: n,
+        estado: info.estado,
+        fechaScraping: info.fechaScraping,
+        error: info.error
+      };
+    });
+
+    return Utils.successResponse({
+      idGrupo: grupo.ID_GRUPO,
+      totalHistoricos: nomenclaturas.length,
+      estados: estados
+    });
   },
 
   /**
@@ -2650,19 +2934,44 @@ const OCDS_API = {
     Utils.validateParams(params, ['nomenclatura']);
     const nomenclatura = params.nomenclatura.toUpperCase().trim();
 
-    // Buscar en índice
-    const indexData = OCDS_API._buscarEnIndice(nomenclatura);
+    // 1) Intentar índice local (fast path)
+    let indexData = OCDS_API._buscarEnIndice(nomenclatura);
+    let fuenteIndice = 'INDICE_LOCAL';
+
+    // 2) Fallback: si no está en el índice, buscar en vivo en la API OCDS
+    //    y cachear el resultado en OCDS_INDEX para futuras consultas.
     if (!indexData) {
+      try {
+        indexData = OCDS_API._liveSearchByNomenclatura(nomenclatura);
+        if (indexData) fuenteIndice = 'LIVE_FETCH';
+      } catch (e) {
+        Logger.log('Error en _liveSearchByNomenclatura: ' + e);
+      }
+    }
+
+    if (!indexData) {
+      const año = OCDS_API._extraerAñoNomenclatura(nomenclatura);
       return Utils.errorResponse(
-        'Proceso no encontrado en índice. Ejecuta "Actualizar Índice OCDS" desde el menú.'
+        'Proceso no encontrado en índice ni en API OCDS. ' +
+        'La API OCDS del gobierno podría no haber publicado aún el mes ' +
+        (año ? 'correspondiente a ' + año : 'correspondiente') + '. ' +
+        'Intenta con Tender ID u OCID si los conoces.'
       );
     }
 
-    // Consultar API con tender_id
-    return OCDS_API.getByTenderId({
-      tenderId: indexData.tenderId,
-      source: CONFIG.OCDS_API.SOURCE_V3
-    });
+    // 3) Preferir OCID (es el identificador canónico y está correcto en el índice).
+    //    Si no hay OCID, caer a tender_id numérico.
+    let respuesta;
+    if (indexData.ocid && String(indexData.ocid).startsWith('ocds-')) {
+      respuesta = OCDS_API.getByOcid({ ocid: indexData.ocid });
+    } else {
+      respuesta = OCDS_API.getByTenderId({
+        tenderId: indexData.tenderId,
+        source: CONFIG.OCDS_API.SOURCE_V3
+      });
+    }
+    if (respuesta.success) respuesta.fuenteIndice = fuenteIndice;
+    return respuesta;
   },
 
   /**
@@ -2776,23 +3085,300 @@ const OCDS_API = {
 
   // ==================== HELPERS ====================
 
+  /**
+   * Busca una nomenclatura en OCDS_INDEX con 3 estrategias en cascada:
+   *   1) TextFinder exact (matchEntireCell=true) — rápido con Sheets index
+   *   2) TextFinder substring + verify — por si la celda tiene whitespace
+   *      invisible (NBSP, etc.) que rompe el match exacto
+   *   3) Chunked linear scan (10K filas por batch) — fallback garantizado
+   *      usando solo columna A + verificación con normalización agresiva
+   */
   _buscarEnIndice: function(nomenclatura) {
     const sheet = Utils.getSheetSafe(CONFIG.SHEETS.OCDS_INDEX);
     if (!sheet) return null;
 
-    const data = sheet.getDataRange().getValues();
-    for (let i = 1; i < data.length; i++) {
-      if (data[i][0] && data[i][0].toUpperCase().trim() === nomenclatura) {
-        return {
-          nomenclatura: data[i][0],
-          tenderId: data[i][1],
-          ocid: data[i][2],
-          entidad: data[i][3],
-          valor: data[i][4]
-        };
+    const needle = OCDS_API._normalizarNomenclatura(nomenclatura);
+    if (!needle) return null;
+
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 2) return null;
+
+    const colA = sheet.getRange(2, 1, lastRow - 1, 1);
+
+    // Estrategia 1: TextFinder exact cell match
+    try {
+      const finder = colA.createTextFinder(needle)
+        .matchCase(false)
+        .matchEntireCell(true)
+        .useRegularExpression(false);
+      const cell = finder.findNext();
+      if (cell) {
+        return OCDS_API._leerFilaIndice(sheet, cell.getRow());
+      }
+    } catch (e) {
+      Logger.log('_buscarEnIndice Estrategia 1 (TextFinder exact) error: ' + e);
+    }
+
+    // Estrategia 2: TextFinder substring + verify con normalización
+    try {
+      const finder = colA.createTextFinder(needle)
+        .matchCase(false)
+        .matchEntireCell(false)
+        .useRegularExpression(false);
+      const cells = finder.findAll();
+      for (let i = 0; i < cells.length; i++) {
+        const cell = cells[i];
+        const valNormalizado = OCDS_API._normalizarNomenclatura(cell.getValue());
+        if (valNormalizado === needle) {
+          return OCDS_API._leerFilaIndice(sheet, cell.getRow());
+        }
+      }
+    } catch (e) {
+      Logger.log('_buscarEnIndice Estrategia 2 (TextFinder substring) error: ' + e);
+    }
+
+    // Estrategia 3: Chunked linear scan garantizado
+    try {
+      const colMap = OCDS_API._getIndiceColMap(sheet);
+      const numCols = Math.max(sheet.getLastColumn(), 5);
+      const CHUNK = 10000;
+      let startRow = 2;
+      const deadlineMs = Date.now() + 20000; // no tocar el timeout de 30s
+      while (startRow <= lastRow && Date.now() < deadlineMs) {
+        const numRows = Math.min(CHUNK, lastRow - startRow + 1);
+        const data = sheet.getRange(startRow, 1, numRows, numCols).getValues();
+        for (let i = 0; i < data.length; i++) {
+          const valNormalizado = OCDS_API._normalizarNomenclatura(data[i][colMap.nomenclatura]);
+          if (valNormalizado === needle) {
+            return OCDS_API._construirFilaIndice(data[i], colMap);
+          }
+        }
+        startRow += CHUNK;
+      }
+    } catch (e) {
+      Logger.log('_buscarEnIndice Estrategia 3 (chunked scan) error: ' + e);
+    }
+
+    return null;
+  },
+
+  /**
+   * Normaliza nomenclaturas agresivamente para match:
+   * - Upper case
+   * - Trim
+   * - Remueve non-breaking spaces (U+00A0)
+   * - Colapsa whitespace múltiple
+   * - Remueve caracteres de control invisibles
+   */
+  _normalizarNomenclatura: function(valor) {
+    if (!valor) return '';
+    return String(valor)
+      .replace(/ /g, ' ')        // non-breaking space → space
+      .replace(/[​-‍﻿]/g, '') // zero-width chars
+      .replace(/\s+/g, ' ')           // whitespace múltiple → uno solo
+      .trim()
+      .toUpperCase();
+  },
+
+  _leerFilaIndice: function(sheet, rowNumber) {
+    const colMap = OCDS_API._getIndiceColMap(sheet);
+    const numCols = Math.max(sheet.getLastColumn(), 5);
+    const rowData = sheet.getRange(rowNumber, 1, 1, numCols).getValues()[0];
+    return OCDS_API._construirFilaIndice(rowData, colMap);
+  },
+
+  /**
+   * Construye objeto de fila del índice a partir del row array + el map
+   * de columnas. Tolerante a schemas distintos (p.ej. columnas en otro
+   * orden o nombres distintos poblados por scripts externos).
+   */
+  _construirFilaIndice: function(row, colMap) {
+    const safe = function(idx) { return idx >= 0 ? row[idx] : null; };
+    const rawValor = safe(colMap.valor);
+    // Solo devolver valor si es numérico real. El índice OCDS_INDEX de algunos
+    // despliegues tiene descripción en la columna "VALOR" (schema heredado de
+    // scripts Python viejos) — devolver null en ese caso en vez del texto basura.
+    const valorNum = typeof rawValor === 'number'
+      ? rawValor
+      : (typeof rawValor === 'string' && /^[\d,.\s-]+$/.test(rawValor)
+          ? parseFloat(String(rawValor).replace(/[^\d.-]/g, ''))
+          : null);
+
+    return {
+      nomenclatura: safe(colMap.nomenclatura),
+      tenderId: safe(colMap.tenderId),
+      ocid: safe(colMap.ocid),
+      entidad: safe(colMap.entidad),
+      valor: (valorNum != null && !isNaN(valorNum)) ? valorNum : null
+    };
+  },
+
+  /**
+   * Lee los headers de la hoja OCDS_INDEX y mapea cada campo a su índice
+   * de columna. Acepta distintos nombres posibles (ej. TENDER_ID vs TENDERID).
+   * Si no encuentra un nombre, cae al orden por defecto [NOM, TID, OCID, ENT, VAL].
+   * Cacheado en memoria del script (no persistente, se recalcula en cada invocación).
+   */
+  _getIndiceColMap: function(sheet) {
+    try {
+      const lastCol = sheet.getLastColumn();
+      if (lastCol < 1) throw new Error('Hoja sin columnas');
+      const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(function(h) {
+        return String(h || '').toUpperCase().trim();
+      });
+      const find = function(nombres) {
+        for (let i = 0; i < headers.length; i++) {
+          for (let j = 0; j < nombres.length; j++) {
+            if (headers[i] === nombres[j]) return i;
+          }
+        }
+        return -1;
+      };
+      const map = {
+        nomenclatura: find(['NOMENCLATURA', 'NOMBRE']),
+        tenderId: find(['TENDER_ID', 'TENDERID', 'ID_TENDER']),
+        ocid: find(['OCID']),
+        entidad: find(['ENTIDAD', 'BUYER', 'ENTIDAD_NOMBRE']),
+        valor: find(['VALOR', 'VALUE', 'MONTO', 'AMOUNT', 'VALOR_REFERENCIAL'])
+      };
+      // Fallback al orden por defecto para campos no encontrados
+      if (map.nomenclatura < 0) map.nomenclatura = 0;
+      if (map.tenderId < 0) map.tenderId = 1;
+      if (map.ocid < 0) map.ocid = 2;
+      if (map.entidad < 0) map.entidad = 3;
+      if (map.valor < 0) map.valor = 4;
+      return map;
+    } catch (e) {
+      Logger.log('_getIndiceColMap fallback al orden default: ' + e);
+      return { nomenclatura: 0, tenderId: 1, ocid: 2, entidad: 3, valor: 4 };
+    }
+  },
+
+  /**
+   * Busca en vivo una nomenclatura contra la API OCDS paginando por meses
+   * del año embebido en la nomenclatura (ej: CP-XX-2026-... → año 2026).
+   * Al terminar, cachea TODOS los records escaneados en OCDS_INDEX en UNA
+   * sola llamada a _upsertRows para minimizar lecturas/escrituras sobre la hoja.
+   *
+   * Retorna {nomenclatura, tenderId, ocid, entidad, valor} o null si no
+   * aparece en ningún mes disponible del año.
+   */
+  _liveSearchByNomenclatura: function(nomenclatura) {
+    const needle = String(nomenclatura || '').toUpperCase().trim();
+    if (!needle) return null;
+
+    const año = OCDS_API._extraerAñoNomenclatura(needle);
+    if (!año) return null;
+
+    // Intentar obtener meses de /files?year=X. Si está vacío (típico en año
+    // actual — el API publica el paquete mensual con retraso), usar fallback:
+    // para año actual probar 1 hasta mes actual, para año pasado probar 1-12.
+    let meses = OCDS_INDEX._getMesesDisponibles(año);
+    if (meses.length === 0) {
+      const hoy = new Date();
+      const añoActual = hoy.getFullYear();
+      const mesActual = hoy.getMonth() + 1;
+      if (año === añoActual) {
+        // Año en curso: probar desde mes actual hacia atrás
+        meses = [];
+        for (let m = mesActual; m >= 1; m--) meses.push(m);
+      } else if (año < añoActual) {
+        // Año pasado: probar todos los meses
+        meses = [12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+      } else {
+        return null; // año futuro, nada que hacer
+      }
+    } else {
+      // Meses del más reciente al más antiguo (mayor probabilidad de match reciente)
+      meses.sort(function(a, b) { return b - a; });
+    }
+
+    // Asegurar que la hoja exista para poder cachear; agregar col MES si falta
+    let sheet = Utils.getSheetSafe(CONFIG.SHEETS.OCDS_INDEX);
+    if (!sheet) {
+      sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(CONFIG.SHEETS.OCDS_INDEX);
+      sheet.getRange(1, 1, 1, 7).setValues([['NOMENCLATURA', 'TENDER_ID', 'OCID', 'ENTIDAD', 'VALOR', 'FECHA_ACTUALIZACION', 'MES']]);
+      sheet.getRange(1, 1, 1, 7).setBackground('#059669').setFontColor('white').setFontWeight('bold');
+      sheet.setFrozenRows(1);
+    } else if (sheet.getLastColumn() < 7) {
+      sheet.getRange(1, 7).setValue('MES')
+        .setBackground('#059669').setFontColor('white').setFontWeight('bold');
+    }
+
+    let encontrado = null;
+    const rowsAcumuladas = [];
+    const now = new Date();
+
+    // Limitar tiempo total para no tocar el timeout de 30s de Apps Script
+    const deadlineMs = Date.now() + 25000;
+
+    for (let m = 0; m < meses.length && !encontrado; m++) {
+      if (Date.now() > deadlineMs) break;
+      const mes = meses[m];
+      const dataSegmentationID = año + '-' + String(mes).padStart(2, '0');
+      let page = 1;
+
+      while (page <= 100 && !encontrado && Date.now() <= deadlineMs) {
+        const url = CONFIG.OCDS_API.BASE_URL + '/records?sourceId=' + CONFIG.OCDS_API.SOURCE_V3 +
+                    '&dataSegmentationID=' + dataSegmentationID + '&page=' + page;
+        Utilities.sleep(CONFIG.OCDS_API.RATE_LIMIT_MS);
+
+        try {
+          const response = UrlFetchApp.fetch(url, {
+            muteHttpExceptions: true,
+            headers: { 'Accept': 'application/json', 'User-Agent': CONFIG.OCDS_API.BROWSER_UA }
+          });
+          if (response.getResponseCode() !== 200) break;
+          const data = JSON.parse(response.getContentText());
+          const records = data.records || [];
+          if (records.length === 0) break;
+
+          for (let r = 0; r < records.length; r++) {
+            const record = records[r];
+            const compiled = record.compiledRelease || {};
+            const tender = compiled.tender || {};
+            const buyer = compiled.buyer || {};
+            const title = tender.title || '';
+            const titleUpper = title.toUpperCase().trim();
+
+            const entry = {
+              nomenclatura: title,
+              tenderId: tender.id || '',
+              ocid: compiled.ocid || '',
+              entidad: buyer.name || '',
+              valor: tender.value ? tender.value.amount : 0
+            };
+
+            rowsAcumuladas.push([
+              entry.nomenclatura, entry.tenderId, entry.ocid,
+              entry.entidad, entry.valor, now, mes
+            ]);
+
+            if (!encontrado && titleUpper === needle) {
+              encontrado = entry;
+              // No cortamos el loop aquí: terminamos de acumular la página
+              // actual para cachearla completa. Cortamos en el while.
+            }
+          }
+
+          page++;
+        } catch (e) {
+          Logger.log('_liveSearchByNomenclatura fetch error page=' + page + ': ' + e);
+          break;
+        }
       }
     }
-    return null;
+
+    // UN solo upsert al final (minimiza lecturas/escrituras sobre OCDS_INDEX)
+    if (rowsAcumuladas.length > 0) {
+      try {
+        OCDS_INDEX._upsertRows(sheet, rowsAcumuladas);
+      } catch (e) {
+        Logger.log('_liveSearchByNomenclatura upsert final error: ' + e);
+      }
+    }
+
+    return encontrado;
   },
 
   _fetch: function(url) {
@@ -2800,7 +3386,7 @@ const OCDS_API = {
     const response = UrlFetchApp.fetch(url, {
       muteHttpExceptions: true,
       followRedirects: true,
-      headers: { 'Accept': 'application/json', 'User-Agent': 'SEACE-Intelligence/2.0' }
+      headers: { 'Accept': 'application/json', 'User-Agent': CONFIG.OCDS_API.BROWSER_UA }
     });
     if (response.getResponseCode() !== 200) throw new Error('HTTP ' + response.getResponseCode());
     return JSON.parse(response.getContentText());
@@ -3109,32 +3695,60 @@ const OCDS_INDEX = {
    * Actualiza el índice descargando datos de la API
    */
   actualizar: function(params) {
-    const year = params.year || new Date().getFullYear();
+    const year = parseInt(params.year) || new Date().getFullYear();
+    const monthFilter = params.month ? parseInt(params.month) : null;
     const entidadFiltro = params.entidad || null;
 
-    // Crear hoja si no existe
+    // Crear hoja si no existe; si existe pero no tiene columna MES (G), agregarla
     let sheet = Utils.getSheetSafe(CONFIG.SHEETS.OCDS_INDEX);
     if (!sheet) {
       sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(CONFIG.SHEETS.OCDS_INDEX);
-      sheet.getRange(1, 1, 1, 6).setValues([['NOMENCLATURA', 'TENDER_ID', 'OCID', 'ENTIDAD', 'VALOR', 'FECHA_ACTUALIZACION']]);
-      sheet.getRange(1, 1, 1, 6).setBackground('#059669').setFontColor('white').setFontWeight('bold');
+      sheet.getRange(1, 1, 1, 7).setValues([['NOMENCLATURA', 'TENDER_ID', 'OCID', 'ENTIDAD', 'VALOR', 'FECHA_ACTUALIZACION', 'MES']]);
+      sheet.getRange(1, 1, 1, 7).setBackground('#059669').setFontColor('white').setFontWeight('bold');
       sheet.setFrozenRows(1);
+    } else if (sheet.getLastColumn() < 7) {
+      // Migrar: agregar encabezado MES en columna G
+      sheet.getRange(1, 7).setValue('MES')
+        .setBackground('#059669').setFontColor('white').setFontWeight('bold');
     }
 
-    const mesesDisponibles = OCDS_INDEX._getMesesDisponibles(year);
+    // Obtener meses desde /files?year=X. Si está vacío (típico en año actual),
+    // probar igual 1..12 o 1..mes-actual; _descargarMes retorna [] si no hay
+    // data para ese mes específico, así que no es costoso.
+    let mesesDisponibles = OCDS_INDEX._getMesesDisponibles(year);
     if (mesesDisponibles.length === 0) {
-      return Utils.errorResponse('No hay datos para el año ' + year);
+      const hoy = new Date();
+      const añoActual = hoy.getFullYear();
+      const mesActual = hoy.getMonth() + 1;
+      if (year === añoActual) {
+        mesesDisponibles = [];
+        for (let m = 1; m <= mesActual; m++) mesesDisponibles.push(m);
+      } else if (year < añoActual) {
+        mesesDisponibles = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+      } else {
+        return Utils.errorResponse('Año ' + year + ' es futuro, no hay datos');
+      }
+    }
+
+    // Filtrar por mes específico si se pidió
+    const mesesAProcesar = monthFilter
+      ? mesesDisponibles.filter(function(m) { return m === monthFilter; })
+      : mesesDisponibles;
+
+    if (monthFilter && mesesAProcesar.length === 0) {
+      return Utils.errorResponse('El mes ' + monthFilter + '/' + year + ' no está disponible en el API OCDS aún');
     }
 
     let totalProcesos = 0;
     const errores = [];
 
-    mesesDisponibles.forEach(function(mes) {
+    mesesAProcesar.forEach(function(mes) {
       try {
         const procesos = OCDS_INDEX._descargarMes(year, mes, entidadFiltro);
         if (procesos.length > 0) {
           const rows = procesos.map(function(p) {
-            return [p.nomenclatura, p.tenderId, p.ocid, p.entidad, p.valor, new Date()];
+            // Ahora la fila tiene 7 columnas, incluyendo MES al final
+            return [p.nomenclatura, p.tenderId, p.ocid, p.entidad, p.valor, new Date(), mes];
           });
           OCDS_INDEX._upsertRows(sheet, rows);
           totalProcesos += procesos.length;
@@ -3145,14 +3759,135 @@ const OCDS_INDEX = {
     });
 
     return Utils.successResponse({
-      procesados: totalProcesos, meses: mesesDisponibles.length, errores: errores
-    }, 'Índice actualizado con ' + totalProcesos + ' procesos');
+      procesados: totalProcesos,
+      meses: mesesAProcesar.length,
+      year: year,
+      month: monthFilter,
+      errores: errores
+    }, 'Índice actualizado con ' + totalProcesos + ' procesos' + (monthFilter ? ' para ' + year + '-' + String(monthFilter).padStart(2, '0') : ''));
+  },
+
+  /**
+   * Retorna el estado del índice por año/mes comparado con lo disponible en
+   * el API OCDS. Para cada año presente en el índice (+ año actual):
+   *   - cuenta de procesos indexados por mes (si tiene columna MES)
+   *   - última fecha de actualización por mes
+   *   - qué meses están disponibles en el API OCDS
+   *
+   * El año se extrae de NOMENCLATURA (formato: PREFIX-YYYY-SUFIJO) — 100% confiable.
+   * El mes se lee de la columna G (MES) si existe; si no, va a "sin mes" (mes 0).
+   * Los scrapes nuevos populan MES automáticamente; los viejos quedan en "sin mes"
+   * hasta que se re-scrapen.
+   *
+   * @returns { años: { 2026: { total, sinMes, meses: { 1: {...}, ... } } } }
+   */
+  stats: function(params) {
+    const sheet = Utils.getSheetSafe(CONFIG.SHEETS.OCDS_INDEX);
+
+    const index = {}; // { year: { total, sinMes, meses: {1: {count, lastUpdate}, ...} } }
+
+    if (sheet) {
+      const lastRow = sheet.getLastRow();
+      const lastCol = sheet.getLastColumn();
+      if (lastRow > 1) {
+        // Leer columnas: A (NOMENCLATURA), F (FECHA_ACTUALIZACION), G (MES si existe)
+        const numCols = Math.max(lastCol, 6);
+        const data = sheet.getRange(2, 1, lastRow - 1, numCols).getValues();
+        const tieneColMes = lastCol >= 7;
+
+        for (let i = 0; i < data.length; i++) {
+          const nomenclatura = String(data[i][0] || '');
+          const fechaAct = data[i][5];
+          const mesRaw = tieneColMes ? data[i][6] : null;
+
+          // Extraer año de nomenclatura. Las nomenclaturas tienen varios
+          // grupos -XX- separados por guiones; el año real viene casi
+          // siempre al final (TIPO-METODO-NUMERO-YEAR-ENTIDAD-VERSION).
+          // Por eso: buscamos TODOS los matches de -YYYY- y tomamos el último
+          // que caiga en el rango realista 2010-2030.
+          const yearRegex = /-(20[1-2]\d)-/g;
+          let yearMatch = null;
+          let m;
+          while ((m = yearRegex.exec(nomenclatura)) !== null) {
+            const y = parseInt(m[1]);
+            if (y >= 2010 && y <= 2030) yearMatch = y;
+          }
+          if (!yearMatch) continue;
+          const year = yearMatch;
+
+          // Extraer mes de columna MES si existe, sino null
+          const month = (mesRaw && !isNaN(parseInt(mesRaw))) ? parseInt(mesRaw) : null;
+
+          if (!index[year]) index[year] = { total: 0, sinMes: 0, meses: {} };
+          index[year].total++;
+
+          if (month && month >= 1 && month <= 12) {
+            if (!index[year].meses[month]) index[year].meses[month] = { count: 0, lastUpdate: null };
+            index[year].meses[month].count++;
+            if (fechaAct) {
+              const cur = index[year].meses[month].lastUpdate;
+              if (!cur || fechaAct > cur) {
+                index[year].meses[month].lastUpdate = fechaAct;
+              }
+            }
+          } else {
+            index[year].sinMes++;
+          }
+        }
+      }
+    }
+
+    // Asegurar que el año actual aparezca aunque esté vacío
+    const añoActual = new Date().getFullYear();
+    if (!index[añoActual]) index[añoActual] = { total: 0, sinMes: 0, meses: {} };
+
+    // Para cada año, consultar API cuáles meses están disponibles
+    const años = Object.keys(index).map(function(y) { return parseInt(y); }).sort(function(a, b) { return b - a; });
+    const resultado = {};
+
+    años.forEach(function(año) {
+      const mesesDisponiblesAPI = OCDS_INDEX._getMesesDisponibles(año);
+      const mesesStatus = {};
+
+      for (let m = 1; m <= 12; m++) {
+        const entry = index[año].meses[m];
+        const count = entry ? entry.count : 0;
+        const lastUpdate = entry ? entry.lastUpdate : null;
+        const disponibleAPI = mesesDisponiblesAPI.indexOf(m) !== -1;
+
+        // Status:
+        //   indexed    → en API y en índice (puede ser parcial, pero usuario puede re-scrapear)
+        //   missing    → en API pero NO en índice (falta scrapear)
+        //   extra      → en índice pero NO en API (raro, quedó de antes)
+        //   unavailable → no en API ni en índice (nada que hacer)
+        let status = 'unavailable';
+        if (disponibleAPI && count > 0) status = 'indexed';
+        else if (disponibleAPI && count === 0) status = 'missing';
+        else if (!disponibleAPI && count > 0) status = 'extra';
+
+        mesesStatus[m] = {
+          count: count,
+          lastUpdate: lastUpdate ? (lastUpdate instanceof Date ? lastUpdate.toISOString() : String(lastUpdate)) : null,
+          disponibleAPI: disponibleAPI,
+          status: status
+        };
+      }
+
+      resultado[año] = {
+        total: index[año].total,
+        sinMes: index[año].sinMes || 0,
+        meses: mesesStatus,
+        mesesDisponiblesAPI: mesesDisponiblesAPI
+      };
+    });
+
+    return Utils.successResponse({ años: resultado });
   },
 
   _getMesesDisponibles: function(year) {
     try {
       const url = CONFIG.OCDS_API.BASE_URL + '/files?year=' + year + '&source=' + CONFIG.OCDS_API.SOURCE_V3;
-      const response = UrlFetchApp.fetch(url, { muteHttpExceptions: true, headers: { 'Accept': 'application/json' } });
+      const response = UrlFetchApp.fetch(url, { muteHttpExceptions: true, headers: { 'Accept': 'application/json', 'User-Agent': CONFIG.OCDS_API.BROWSER_UA } });
       if (response.getResponseCode() !== 200) return [];
       const data = JSON.parse(response.getContentText());
       return (data.results || []).map(function(r) { return parseInt(r.month); });
@@ -3171,7 +3906,7 @@ const OCDS_INDEX = {
       Utilities.sleep(CONFIG.OCDS_API.RATE_LIMIT_MS);
 
       try {
-        const response = UrlFetchApp.fetch(url, { muteHttpExceptions: true, headers: { 'Accept': 'application/json' } });
+        const response = UrlFetchApp.fetch(url, { muteHttpExceptions: true, headers: { 'Accept': 'application/json', 'User-Agent': CONFIG.OCDS_API.BROWSER_UA } });
         if (response.getResponseCode() !== 200) break;
         const data = JSON.parse(response.getContentText());
         const records = data.records || [];
@@ -3200,14 +3935,29 @@ const OCDS_INDEX = {
   },
 
   _upsertRows: function(sheet, rows) {
-    const data = sheet.getDataRange().getValues();
+    if (!rows || rows.length === 0) return;
+
+    const lastRow = sheet.getLastRow();
     const existingNoms = {};
-    for (let i = 1; i < data.length; i++) existingNoms[data[i][0]] = i + 1;
+
+    // Leer SOLO columna A (nomenclatura) para construir el map.
+    // En OCDS_INDEX con 124K+ filas, esto es ~6x más eficiente que
+    // leer toda la hoja (6 columnas × 124K celdas).
+    if (lastRow > 1) {
+      const colA = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+      for (let i = 0; i < colA.length; i++) {
+        if (colA[i][0]) {
+          existingNoms[String(colA[i][0]).trim().toUpperCase()] = i + 2;
+        }
+      }
+    }
 
     const newRows = [];
     rows.forEach(function(row) {
-      if (existingNoms[row[0]]) {
-        sheet.getRange(existingNoms[row[0]], 1, 1, row.length).setValues([row]);
+      const key = String(row[0] || '').trim().toUpperCase();
+      if (!key) return;
+      if (existingNoms[key]) {
+        sheet.getRange(existingNoms[key], 1, 1, row.length).setValues([row]);
       } else {
         newRows.push(row);
       }
@@ -3481,7 +4231,7 @@ function menuCrearHojasBase() {
       headers: ['NOMENCLATURA', 'FECHA_SCRAPING', 'OCID', 'TENDER_ID', 'URL_SEACE', 'SOURCE_ID',
                 'CRONOGRAMA_JSON', 'DOCUMENTOS_JSON', 'POSTORES_JSON', 'CONTRATO_JSON',
                 'ACCIONES_JSON', 'ITEMS_JSON', 'COMITE_JSON', 'CONSULTAS_JSON', 'OFERTAS_JSON',
-                'ESTADO_SCRAPING', 'ERROR_MENSAJE']
+                'ESTADO_SCRAPING', 'ERROR_MENSAJE', 'FUENTE']
     },
     {
       name: CONFIG.SHEETS.FILTROS_EMPRESAS_ELECTRICAS,
@@ -4198,21 +4948,51 @@ const HistoricosDetalle = {
       params.fuente || 'IA'
     ];
 
+    let accion, filaResultado;
     if (existeRow > 0) {
-      // Actualizar existente
       sheet.getRange(existeRow, 1, 1, nuevaFila.length).setValues([nuevaFila]);
-      return Utils.successResponse(
-        { accion: 'actualizado', fila: existeRow },
-        'Histórico ' + params.nomenclatura + ' actualizado'
-      );
+      accion = 'actualizado';
+      filaResultado = existeRow;
     } else {
-      // Agregar nuevo
       sheet.appendRow(nuevaFila);
-      return Utils.successResponse(
-        { accion: 'agregado', fila: sheet.getLastRow() },
-        'Histórico ' + params.nomenclatura + ' agregado'
-      );
+      accion = 'agregado';
+      filaResultado = sheet.getLastRow();
     }
+
+    // Dual-write: también upsertear en DATOS_SEACE para que Fase 2/3
+    // (GrupoDetalleModal, inteligencia competitiva) vean los datos unificados
+    // con los que produzca el scraper Python. Si falla, no rompe el flujo
+    // principal — HISTORICOS_DETALLE ya quedó guardado.
+    let dualWrite = { ok: false, error: null };
+    try {
+      const resDual = DatosSeaceLookup.guardar({
+        nomenclatura: params.nomenclatura,
+        fuente: 'captura_ia',
+        estadoScraping: 'completo',
+        fechaScraping: new Date(),
+        tenderId: params.tender_id || params.tenderId || '',
+        urlSeace: params.linkSeace || params.link_seace || '',
+        cronograma: params.cronograma || [],
+        documentos: params.documentos || [],
+        postores: params.postores || [],
+        contrato: params.contrato || {},
+        acciones: params.accionesDelProcedimiento || params.acciones || [],
+        items: params.items || [],
+        comite: params.comiteSeleccion || params.comite || [],
+        consultas: params.consultasObservaciones || params.consultas || [],
+        ofertas: params.ofertas || params.postores || []
+      });
+      dualWrite.ok = !!(resDual && resDual.success);
+      if (!dualWrite.ok) dualWrite.error = (resDual && resDual.error) || 'sin detalle';
+    } catch (e) {
+      dualWrite.error = e && e.toString ? e.toString() : String(e);
+      Utils.log('HistoricosDetalle.guardarExtraidoIA dualWrite error', dualWrite.error);
+    }
+
+    return Utils.successResponse(
+      { accion: accion, fila: filaResultado, dualWriteDatosSeace: dualWrite },
+      'Histórico ' + params.nomenclatura + ' ' + accion
+    );
   },
 
   /**
@@ -4429,6 +5209,158 @@ const DatosSeaceLookup = {
       Utils.log('DatosSeaceLookup.getByNomenclatura: error', error.toString());
       return Utils.errorResponse(error.message || error.toString());
     }
+  },
+
+  /**
+   * Upsert idempotente en la hoja DATOS_SEACE por NOMENCLATURA.
+   * Acepta el payload completo y serializa los campos JSON internamente
+   * (el caller puede enviar arrays/objetos directamente o strings ya
+   * stringifiados — ambos se normalizan).
+   *
+   * Crea la hoja si no existe y auto-migra el header agregando columnas
+   * faltantes (p.ej. FUENTE) sin romper datos previos.
+   *
+   * @param {Object} params
+   * @param {string} params.nomenclatura - PK (requerido)
+   * @param {string} [params.fuente] - 'python_scraper' | 'captura_ia' | 'ocds_api'
+   * @param {string} [params.estadoScraping] - 'pendiente' | 'en_proceso' | 'completo' | 'error'
+   * @param {*} [params.cronograma] - array u objeto
+   * @param {*} [params.documentos]
+   * @param {*} [params.postores]
+   * @param {*} [params.contrato]
+   * @param {*} [params.acciones]
+   * @param {*} [params.items]
+   * @param {*} [params.comite]
+   * @param {*} [params.consultas]
+   * @param {*} [params.ofertas]
+   * @param {string} [params.ocid]
+   * @param {string} [params.tenderId]
+   * @param {string} [params.urlSeace]
+   * @param {string} [params.sourceId]
+   * @param {string} [params.errorMensaje]
+   */
+  guardar: function(params) {
+    Utils.validateParams(params, ['nomenclatura']);
+    const nomenclatura = String(params.nomenclatura).trim();
+
+    const HEADERS_CANONICOS = [
+      'NOMENCLATURA', 'FECHA_SCRAPING', 'OCID', 'TENDER_ID', 'URL_SEACE', 'SOURCE_ID',
+      'CRONOGRAMA_JSON', 'DOCUMENTOS_JSON', 'POSTORES_JSON', 'CONTRATO_JSON',
+      'ACCIONES_JSON', 'ITEMS_JSON', 'COMITE_JSON', 'CONSULTAS_JSON', 'OFERTAS_JSON',
+      'ESTADO_SCRAPING', 'ERROR_MENSAJE', 'FUENTE'
+    ];
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getSheetByName(CONFIG.SHEETS.DATOS_SEACE);
+
+    if (!sheet) {
+      sheet = ss.insertSheet(CONFIG.SHEETS.DATOS_SEACE);
+      sheet.getRange(1, 1, 1, HEADERS_CANONICOS.length).setValues([HEADERS_CANONICOS]);
+      sheet.getRange(1, 1, 1, HEADERS_CANONICOS.length)
+        .setBackground('#1e40af').setFontColor('white').setFontWeight('bold');
+      sheet.setFrozenRows(1);
+    } else {
+      // Auto-migrar headers faltantes (p.ej. FUENTE en hojas creadas con schema viejo)
+      const lastCol = Math.max(1, sheet.getLastColumn());
+      const headersActuales = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(function(h) {
+        return String(h || '').trim().toUpperCase();
+      });
+      const faltantes = HEADERS_CANONICOS.filter(function(h) { return headersActuales.indexOf(h) === -1; });
+      if (faltantes.length > 0) {
+        const inicio = sheet.getLastColumn() + 1;
+        sheet.getRange(1, inicio, 1, faltantes.length).setValues([faltantes])
+          .setBackground('#1e40af').setFontColor('white').setFontWeight('bold');
+      }
+    }
+
+    // Releer headers finales tras posible migración
+    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(function(h) {
+      return String(h || '').trim().toUpperCase();
+    });
+
+    const serializar = function(v) {
+      if (v == null) return '';
+      if (typeof v === 'string') return v;
+      try { return JSON.stringify(v); } catch (e) { return String(v); }
+    };
+
+    // Map de campos de entrada -> nombre de columna en la hoja
+    const fieldMap = {
+      'NOMENCLATURA': nomenclatura,
+      'FECHA_SCRAPING': params.fechaScraping || new Date(),
+      'OCID': params.ocid || '',
+      'TENDER_ID': params.tenderId || '',
+      'URL_SEACE': params.urlSeace || '',
+      'SOURCE_ID': params.sourceId || '',
+      'CRONOGRAMA_JSON': serializar(params.cronograma),
+      'DOCUMENTOS_JSON': serializar(params.documentos),
+      'POSTORES_JSON': serializar(params.postores),
+      'CONTRATO_JSON': serializar(params.contrato),
+      'ACCIONES_JSON': serializar(params.acciones),
+      'ITEMS_JSON': serializar(params.items),
+      'COMITE_JSON': serializar(params.comite),
+      'CONSULTAS_JSON': serializar(params.consultas),
+      'OFERTAS_JSON': serializar(params.ofertas),
+      'ESTADO_SCRAPING': String(params.estadoScraping || 'completo').toLowerCase(),
+      'ERROR_MENSAJE': params.errorMensaje || '',
+      'FUENTE': params.fuente || 'python_scraper'
+    };
+
+    // Buscar fila existente por nomenclatura
+    const lastRow = sheet.getLastRow();
+    const idxNom = headers.indexOf('NOMENCLATURA');
+    let filaExistente = -1;
+
+    if (idxNom >= 0 && lastRow >= 2) {
+      const colNom = sheet.getRange(2, idxNom + 1, lastRow - 1, 1).getValues();
+      for (let i = 0; i < colNom.length; i++) {
+        if (colNom[i][0] && String(colNom[i][0]).trim() === nomenclatura) {
+          filaExistente = i + 2;
+          break;
+        }
+      }
+    }
+
+    // Construir fila alineada al orden actual de headers. Si update, preserva
+    // el valor existente para columnas no presentes en fieldMap (robustez
+    // ante headers extra agregados manualmente por el usuario).
+    let filaActual = null;
+    if (filaExistente > 0) {
+      filaActual = sheet.getRange(filaExistente, 1, 1, headers.length).getValues()[0];
+    }
+
+    const nuevaFila = headers.map(function(h, idx) {
+      if (Object.prototype.hasOwnProperty.call(fieldMap, h)) {
+        const valor = fieldMap[h];
+        // En update, no pisar con vacío si el caller no lo envió
+        if (filaActual && (valor === '' || valor === null || valor === undefined)) {
+          // Mantener el valor previo si existía algo no vacío
+          const previo = filaActual[idx];
+          if (previo !== '' && previo !== null && previo !== undefined) {
+            return previo;
+          }
+        }
+        return valor;
+      }
+      // Columna no manejada: preservar valor existente o vacío
+      return filaActual ? filaActual[idx] : '';
+    });
+
+    if (filaExistente > 0) {
+      sheet.getRange(filaExistente, 1, 1, nuevaFila.length).setValues([nuevaFila]);
+      return Utils.successResponse({
+        accion: 'actualizado',
+        fila: filaExistente,
+        nomenclatura: nomenclatura
+      }, 'DATOS_SEACE actualizado para ' + nomenclatura);
+    } else {
+      sheet.appendRow(nuevaFila);
+      return Utils.successResponse({
+        accion: 'insertado',
+        fila: sheet.getLastRow(),
+        nomenclatura: nomenclatura
+      }, 'DATOS_SEACE insertado para ' + nomenclatura);
+    }
   }
 };
 
@@ -4454,6 +5386,563 @@ const EstadoScraping = {
   }
 };
 
+// ==================== MÓDULO: BUSCADOR DE HISTÓRICOS ====================
+
+/**
+ * Buscador semi-automatizado de históricos en BD_PROCESOS.
+ *
+ * Flujo:
+ * 1. Usuario pasa nomenclatura target (proceso 2026 que quiere postular).
+ * 2. Buscamos el target en BD_PROCESOS para obtener descripción + entidad + clasificación.
+ * 3. Extraemos keywords de la descripción.
+ * 4. Filtramos BD_PROCESOS por:
+ *    - Misma EMPRESA_CORTA (o substring de entidad como fallback).
+ *    - Año < año del target.
+ * 5. Scoreamos por overlap de keywords + bonus por TIPO_SERVICIO + prefijo de nomenclatura.
+ * 6. Retornamos top 30 candidatos ordenados por score.
+ *
+ * El re-ranking semántico con LLM lo hace el frontend (DeepSeek) para no consumir
+ * cuota de UrlFetchApp de Apps Script.
+ */
+const Historicos = {
+  /**
+   * @param {Object} params
+   * @param {string} params.nomenclatura - Nomenclatura target (obligatorio si no se pasa descripcion/entidad)
+   * @param {string} [params.descripcion] - Descripción manual (si no existe nomenclatura en BD)
+   * @param {string} [params.entidad] - Entidad manual (si no existe nomenclatura en BD)
+   * @param {number} [params.limit=30] - Cantidad máxima de candidatos a retornar
+   */
+  buscarCandidatos: function(params) {
+    const limit = parseInt(params.limit) || 30;
+    const nomenclaturaTarget = params.nomenclatura ? String(params.nomenclatura).trim() : '';
+    const descManual = params.descripcion ? String(params.descripcion).trim() : '';
+    const entManual = params.entidad ? String(params.entidad).trim() : '';
+
+    if (!nomenclaturaTarget && (!descManual || !entManual)) {
+      return Utils.errorResponse('Debes pasar "nomenclatura" o bien "descripcion" + "entidad" manualmente');
+    }
+
+    const bdSheet = Utils.getSheetSafe(CONFIG.SHEETS.BD);
+    if (!bdSheet) return Utils.errorResponse('Hoja BD_PROCESOS no encontrada');
+
+    const data = bdSheet.getDataRange().getValues();
+    if (data.length < 2) return Utils.errorResponse('BD_PROCESOS vacía');
+
+    const headers = data[0];
+    const colNom = headers.indexOf('NOMENCLATURA');
+    const colEnt = headers.indexOf('ENTIDAD');
+    const colDesc = headers.indexOf('DESCRIPCION');
+    const colVal = headers.indexOf('VALOR');
+    const colFecha = headers.indexOf('FECHA_PUB');
+    const colEmpCorta = headers.indexOf('EMPRESA_CORTA');
+    const colTipoServ = headers.indexOf('TIPO_SERVICIO');
+
+    // Buscar target en BD_PROCESOS
+    let target = null;
+    let targetRowIdx = -1;
+
+    if (nomenclaturaTarget) {
+      const needle = nomenclaturaTarget.toUpperCase().trim();
+      for (let i = 1; i < data.length; i++) {
+        const nom = String(data[i][colNom] || '').toUpperCase().trim();
+        if (nom === needle) {
+          target = {
+            nomenclatura: data[i][colNom],
+            entidad: data[i][colEnt],
+            descripcion: data[i][colDesc],
+            valor: data[i][colVal],
+            fecha: data[i][colFecha],
+            empresaCorta: data[i][colEmpCorta],
+            tipoServicio: data[i][colTipoServ]
+          };
+          targetRowIdx = i;
+          break;
+        }
+      }
+    }
+
+    // Fallback a descripción manual
+    if (!target) {
+      if (!descManual || !entManual) {
+        return Utils.errorResponse(
+          'Proceso ' + nomenclaturaTarget + ' no encontrado en BD_PROCESOS. ' +
+          'Pasá "descripcion" y "entidad" manualmente para forzar búsqueda.'
+        );
+      }
+      target = {
+        nomenclatura: null,
+        entidad: entManual,
+        descripcion: descManual,
+        empresaCorta: Utils.clasificarEmpresa(entManual),
+        tipoServicio: Utils.clasificarTipoServicio(descManual)
+      };
+    }
+
+    // Año del target (desde nomenclatura)
+    const yearMatch = target.nomenclatura
+      ? String(target.nomenclatura).match(/-(20\d{2})-/)
+      : null;
+    const targetYear = yearMatch ? parseInt(yearMatch[1]) : new Date().getFullYear();
+
+    // Keywords de la descripción del target
+    const keywords = Historicos._extraerKeywords(target.descripcion);
+
+    // Prefijo de nomenclatura target (ej: "CP-SM", "AS-SM", "CP SER-SM")
+    const targetPrefix = Historicos._extraerPrefijo(target.nomenclatura);
+
+    // Entidad target como tokens para match flexible
+    const entidadTokens = Historicos._tokenizarEntidad(target.entidad);
+
+    const candidatos = [];
+
+    for (let i = 1; i < data.length; i++) {
+      if (i === targetRowIdx) continue;
+
+      const nom = String(data[i][colNom] || '');
+      const entRaw = String(data[i][colEnt] || '');
+      const empCorta = String(data[i][colEmpCorta] || '');
+      const descRaw = String(data[i][colDesc] || '');
+      const descUpper = descRaw.toUpperCase();
+      const fecha = data[i][colFecha];
+      const valor = data[i][colVal];
+      const tipoServ = data[i][colTipoServ];
+
+      // --- Filtro 1: entidad ---
+      let entidadMatch = false;
+      if (target.empresaCorta && empCorta === target.empresaCorta) {
+        entidadMatch = true; // match perfecto por clasificación
+      } else {
+        // Fallback: token overlap (al menos 2 tokens significativos en común)
+        const candTokens = Historicos._tokenizarEntidad(entRaw);
+        let tokenOverlap = 0;
+        for (const t of entidadTokens) {
+          if (candTokens.indexOf(t) !== -1) tokenOverlap++;
+        }
+        entidadMatch = tokenOverlap >= 2;
+      }
+      if (!entidadMatch) continue;
+
+      // --- Filtro 2: año (solo históricos, es decir anteriores al target) ---
+      const candYearMatch = nom.match(/-(20\d{2})-/);
+      const candYear = candYearMatch ? parseInt(candYearMatch[1]) : 0;
+      if (candYear === 0 || candYear >= targetYear || candYear < 2015) continue;
+
+      // --- Scoring ---
+      let score = 0;
+      const matchedKeywords = [];
+
+      // Keyword overlap (base del score)
+      for (const kw of keywords) {
+        if (descUpper.indexOf(kw) !== -1) {
+          score += 10;
+          matchedKeywords.push(kw);
+        }
+      }
+
+      // Bonus: mismo TIPO_SERVICIO (clasificación automática)
+      if (tipoServ && target.tipoServicio && tipoServ === target.tipoServicio) {
+        score += 15;
+      }
+
+      // Bonus: mismo prefijo de nomenclatura (CP-SM, AS-SM, etc)
+      const candPrefix = Historicos._extraerPrefijo(nom);
+      if (targetPrefix && candPrefix === targetPrefix) {
+        score += 5;
+      }
+
+      // Solo guardamos candidatos con al menos 1 keyword match
+      if (score >= 10) {
+        candidatos.push({
+          nomenclatura: nom,
+          entidad: entRaw,
+          descripcion: descRaw,
+          valor: typeof valor === 'number' ? valor : 0,
+          fecha: fecha instanceof Date ? fecha.toISOString() : String(fecha || ''),
+          año: candYear,
+          empresaCorta: empCorta,
+          tipoServicio: tipoServ || '',
+          score: score,
+          matchedKeywords: matchedKeywords
+        });
+      }
+    }
+
+    // Deduplicar por nomenclatura (puede haber duplicados por re-publicaciones)
+    const dedupMap = {};
+    for (const c of candidatos) {
+      const key = c.nomenclatura;
+      if (!dedupMap[key] || dedupMap[key].score < c.score) {
+        dedupMap[key] = c;
+      }
+    }
+    const unique = Object.keys(dedupMap).map(function(k) { return dedupMap[k]; });
+
+    // Ordenar por score desc, año desc
+    unique.sort(function(a, b) {
+      if (b.score !== a.score) return b.score - a.score;
+      return b.año - a.año;
+    });
+
+    return Utils.successResponse({
+      target: {
+        nomenclatura: target.nomenclatura,
+        entidad: target.entidad,
+        descripcion: target.descripcion,
+        empresaCorta: target.empresaCorta || '',
+        tipoServicio: target.tipoServicio || '',
+        año: targetYear
+      },
+      keywordsExtraidos: keywords,
+      totalCandidatos: unique.length,
+      candidatos: unique.slice(0, limit)
+    });
+  },
+
+  /**
+   * Extrae keywords distintivas de una descripción:
+   * - Mayúsculas
+   * - Remueve stopwords
+   * - Palabras con > 3 letras
+   * - Devuelve hasta 10 únicas
+   */
+  _extraerKeywords: function(descripcion) {
+    if (!descripcion) return [];
+    const STOPWORDS = new Set([
+      'DEL', 'LAS', 'LOS', 'LA', 'EL', 'UN', 'UNA', 'PARA', 'POR', 'CON', 'SIN',
+      'SOBRE', 'DESDE', 'HASTA', 'ENTRE', 'ANTE', 'SEGUN', 'TRAS',
+      'ESTA', 'ESTE', 'ESTAS', 'ESTOS', 'ESTO', 'ESTO',
+      'SERVICIO', 'SERVICIOS', 'CONTRATACION', 'CONTRATACIÓN', 'CONTRATO',
+      'EMPRESA', 'REGIONAL', 'NIVEL', 'AREA', 'ÁREA', 'PARTE',
+      'QUE', 'CUAL', 'CUAND', 'DOND', 'COMO'
+    ]);
+
+    const desc = String(descripcion).toUpperCase()
+      .replace(/[^A-ZÁÉÍÓÚÑ0-9\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const words = desc.split(' ')
+      .filter(function(w) { return w.length > 3; })
+      .filter(function(w) { return !STOPWORDS.has(w); });
+
+    // Únicas en orden de aparición
+    const seen = {};
+    const unique = [];
+    for (const w of words) {
+      if (!seen[w]) {
+        seen[w] = true;
+        unique.push(w);
+        if (unique.length >= 10) break;
+      }
+    }
+    return unique;
+  },
+
+  /**
+   * Extrae el prefijo de una nomenclatura (parte antes del número-año).
+   * Ej: "CP-SM-36-2024-ELSE-1" → "CP-SM"
+   *     "CP SER-SM-34-2026-ELSE-1" → "CP SER-SM"
+   *     "AS-SM-79-2022-ELSE-1" → "AS-SM"
+   */
+  _extraerPrefijo: function(nomenclatura) {
+    if (!nomenclatura) return '';
+    const m = String(nomenclatura).match(/^([A-Z]+(?:[ -][A-Z]+)*?)[- ]\d+[- ]20\d{2}/i);
+    return m ? m[1].toUpperCase().replace(/\s+/g, ' ').trim() : '';
+  },
+
+  /**
+   * Tokeniza un nombre de entidad en palabras significativas.
+   * Ej: "EMPRESA REGIONAL DE SERVICIO PÚBLICO DE ELECTRICIDAD ELECTRO SUR ESTE S.A.A."
+   *   → ["ELECTRICIDAD", "ELECTRO", "SUR", "ESTE"]
+   */
+  _tokenizarEntidad: function(entidad) {
+    if (!entidad) return [];
+    const STOPWORDS = new Set([
+      'EMPRESA', 'REGIONAL', 'SERVICIO', 'PUBLICO', 'PÚBLICO', 'SERVICIOS', 'PUBLICOS',
+      'PÚBLICOS', 'DEL', 'LAS', 'LOS', 'LA', 'EL', 'DE', 'EN', 'Y', 'O', 'A',
+      'S', 'SA', 'SAA', 'SAC', 'EIRL', 'LTDA', 'LTD', 'SOCIEDAD', 'ANONIMA',
+      'ANÓNIMA', 'CERRADA', 'LIMITADA'
+    ]);
+    return String(entidad).toUpperCase()
+      .replace(/[^A-ZÁÉÍÓÚÑ\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .split(' ')
+      .filter(function(w) { return w.length >= 4 && !STOPWORDS.has(w); });
+  }
+};
+
+// ==================== MÓDULO: DIAGNÓSTICO ====================
+
+const Diagnostico = {
+  /**
+   * Health check general — valida que cada hoja exista y retorna conteo de filas.
+   * Usado por la vista /diagnostico del frontend.
+   */
+  healthCheck: function(params) {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const checks = [];
+    const inicio = new Date();
+
+    // 1) Info del spreadsheet
+    checks.push({
+      grupo: 'Sistema',
+      nombre: 'Spreadsheet activo',
+      ok: true,
+      detalle: ss.getName(),
+      meta: { id: ss.getId(), url: ss.getUrl() }
+    });
+
+    // 2) Verificar cada hoja configurada en CONFIG.SHEETS
+    // Hojas opcionales (se crean perezosamente al primer uso)
+    const HOJAS_OPCIONALES = { POSTORES: true, ENLACES_RAPIDOS: true };
+    const hojasEsperadas = Object.keys(CONFIG.SHEETS);
+    hojasEsperadas.forEach(function(key) {
+      const nombre = CONFIG.SHEETS[key];
+      const sheet = ss.getSheetByName(nombre);
+      const esOpcional = !!HOJAS_OPCIONALES[key];
+      if (!sheet) {
+        checks.push({
+          grupo: 'Hojas',
+          nombre: nombre,
+          ok: esOpcional, // opcionales no bloquean el health check
+          detalle: esOpcional ? 'No existe (se crea al primer uso)' : 'No existe',
+          meta: { key: key, opcional: esOpcional }
+        });
+      } else {
+        const lastRow = sheet.getLastRow();
+        const lastCol = sheet.getLastColumn();
+        checks.push({
+          grupo: 'Hojas',
+          nombre: nombre,
+          ok: true,
+          detalle: Math.max(0, lastRow - 1) + ' filas · ' + lastCol + ' cols',
+          meta: { key: key, filas: lastRow - 1, columnas: lastCol }
+        });
+      }
+    });
+
+    // 3) Validar API OCDS externa — probar MÚLTIPLES endpoints alternativos
+    // (el endpoint /files puede estar bloqueado por WAF pero /records o /record suelen responder)
+    try {
+      const añoActual = new Date().getFullYear();
+      const mesActual = (new Date().getMonth() + 1);
+      const mesPadded = String(mesActual).padStart(2, '0');
+
+      const candidatos = [
+        // Probe 1: endpoint /records paginado (usado por live-fetch) — suele ser el más tolerante
+        {
+          nombre: '/records',
+          url: CONFIG.OCDS_API.BASE_URL + '/records?sourceId=' + CONFIG.OCDS_API.SOURCE_V3 +
+               '&dataSegmentationID=' + (añoActual - 1) + '-12&page=1'
+        },
+        // Probe 2: /files año actual
+        {
+          nombre: '/files (año actual)',
+          url: CONFIG.OCDS_API.BASE_URL + '/files?year=' + añoActual + '&source=' + CONFIG.OCDS_API.SOURCE_V3
+        },
+        // Probe 3: /files año anterior (fallback)
+        {
+          nombre: '/files (año anterior)',
+          url: CONFIG.OCDS_API.BASE_URL + '/files?year=' + (añoActual - 1) + '&source=' + CONFIG.OCDS_API.SOURCE_V3
+        }
+      ];
+
+      let ok = false;
+      let lastCode = 0;
+      let lastLatency = 0;
+      let endpointOK = '';
+      const intentos = [];
+
+      for (let i = 0; i < candidatos.length && !ok; i++) {
+        const t0 = Date.now();
+        const response = UrlFetchApp.fetch(candidatos[i].url, {
+          muteHttpExceptions: true,
+          headers: {
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Language': 'es-PE,es;q=0.9,en;q=0.8',
+            'User-Agent': CONFIG.OCDS_API.BROWSER_UA,
+            'Referer': 'https://contratacionesabiertas.oece.gob.pe/'
+          }
+        });
+        lastLatency = Date.now() - t0;
+        lastCode = response.getResponseCode();
+        intentos.push(candidatos[i].nombre + ':' + lastCode);
+        if (lastCode === 200) {
+          ok = true;
+          endpointOK = candidatos[i].nombre;
+        }
+      }
+
+      checks.push({
+        grupo: 'Integraciones',
+        nombre: 'API OCDS (contratacionesabiertas.oece.gob.pe)',
+        ok: ok,
+        detalle: ok
+          ? 'HTTP 200 via ' + endpointOK + ' · ' + lastLatency + 'ms'
+          : 'HTTP ' + lastCode + ' · ningún endpoint respondió [' + intentos.join(', ') + ']',
+        meta: { latency: lastLatency, status: lastCode, intentos: intentos }
+      });
+    } catch (e) {
+      checks.push({
+        grupo: 'Integraciones',
+        nombre: 'API OCDS',
+        ok: false,
+        detalle: 'Error: ' + e.toString()
+      });
+    }
+
+    // 4) Drive folder
+    try {
+      const folder = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
+      checks.push({
+        grupo: 'Integraciones',
+        nombre: 'Carpeta Drive',
+        ok: true,
+        detalle: folder.getName(),
+        meta: { id: CONFIG.DRIVE_FOLDER_ID, url: folder.getUrl() }
+      });
+    } catch (e) {
+      checks.push({
+        grupo: 'Integraciones',
+        nombre: 'Carpeta Drive',
+        ok: false,
+        detalle: 'Error: ' + e.toString()
+      });
+    }
+
+    // 5) Esquema: validar columnas clave de BD_PROCESOS
+    const bdSheet = ss.getSheetByName(CONFIG.SHEETS.BD);
+    if (bdSheet) {
+      const headers = bdSheet.getRange(1, 1, 1, Math.max(1, bdSheet.getLastColumn())).getValues()[0];
+      const esperadas = ['ID', 'NOMENCLATURA', 'ENTIDAD', 'REGION', 'OBJETO', 'DESCRIPCION', 'VALOR', 'MONEDA', 'FECHA_PUB'];
+      const faltantes = esperadas.filter(function(col) { return headers.indexOf(col) === -1; });
+      checks.push({
+        grupo: 'Esquema',
+        nombre: 'BD_PROCESOS columnas',
+        ok: faltantes.length === 0,
+        detalle: faltantes.length === 0 ? 'Todas presentes' : 'Faltan: ' + faltantes.join(', '),
+        meta: { headers: headers }
+      });
+    }
+
+    // 6) Validar SEGUIMIENTO tiene las 147 columnas esperadas (11 base + 8 etapas × 17)
+    const segSheet = ss.getSheetByName(CONFIG.SHEETS.SEGUIMIENTO);
+    if (segSheet) {
+      const cols = segSheet.getLastColumn();
+      const esperadas = 11 + (8 * (2 + 5 * 3));
+      checks.push({
+        grupo: 'Esquema',
+        nombre: 'SEGUIMIENTO columnas',
+        ok: cols === esperadas,
+        detalle: cols + ' cols (esperadas: ' + esperadas + ')',
+        meta: { actual: cols, esperada: esperadas }
+      });
+    }
+
+    return Utils.successResponse({
+      checks: checks,
+      totalChecks: checks.length,
+      pasadas: checks.filter(function(c) { return c.ok; }).length,
+      duracion: (new Date() - inicio) + 'ms'
+    });
+  },
+
+  /**
+   * Debug específico: dado una nomenclatura, muestra qué ve cada estrategia
+   * de búsqueda en OCDS_INDEX. Útil para diagnosticar "no se encontró" falsos.
+   */
+  debugBuscarIndice: function(params) {
+    Utils.validateParams(params, ['nomenclatura']);
+    const nomenclaturaOriginal = params.nomenclatura;
+    const needle = OCDS_API._normalizarNomenclatura(nomenclaturaOriginal);
+
+    const sheet = Utils.getSheetSafe(CONFIG.SHEETS.OCDS_INDEX);
+    if (!sheet) {
+      return Utils.errorResponse('Hoja OCDS_INDEX no existe');
+    }
+
+    const lastRow = sheet.getLastRow();
+    const resultado = {
+      input: {
+        original: nomenclaturaOriginal,
+        normalizado: needle,
+        chars: needle.split('').map(function(c) { return { char: c, code: c.charCodeAt(0) }; })
+      },
+      hoja: {
+        nombre: CONFIG.SHEETS.OCDS_INDEX,
+        filas: lastRow - 1,
+        lastRow: lastRow
+      },
+      estrategias: {}
+    };
+
+    if (lastRow < 2) {
+      resultado.error = 'Hoja vacía';
+      return Utils.successResponse(resultado);
+    }
+
+    const colA = sheet.getRange(2, 1, lastRow - 1, 1);
+
+    // Estrategia 1: TextFinder exact
+    try {
+      const t0 = Date.now();
+      const finder = colA.createTextFinder(needle)
+        .matchCase(false).matchEntireCell(true).useRegularExpression(false);
+      const cell = finder.findNext();
+      resultado.estrategias.textFinderExact = {
+        ok: !!cell,
+        fila: cell ? cell.getRow() : null,
+        valor: cell ? cell.getValue() : null,
+        ms: Date.now() - t0
+      };
+    } catch (e) {
+      resultado.estrategias.textFinderExact = { error: e.toString() };
+    }
+
+    // Estrategia 2: TextFinder substring
+    try {
+      const t0 = Date.now();
+      const finder = colA.createTextFinder(needle)
+        .matchCase(false).matchEntireCell(false).useRegularExpression(false);
+      const cells = finder.findAll().slice(0, 5);
+      resultado.estrategias.textFinderSubstring = {
+        ok: cells.length > 0,
+        matches: cells.map(function(c) {
+          const val = String(c.getValue() || '');
+          const normalizado = OCDS_API._normalizarNomenclatura(val);
+          return {
+            fila: c.getRow(),
+            valor: val,
+            normalizado: normalizado,
+            matchExacto: normalizado === needle,
+            longitud: val.length
+          };
+        }),
+        totalMatches: cells.length,
+        ms: Date.now() - t0
+      };
+    } catch (e) {
+      resultado.estrategias.textFinderSubstring = { error: e.toString() };
+    }
+
+    // Estrategia 3: Búsqueda con _buscarEnIndice real
+    try {
+      const t0 = Date.now();
+      const found = OCDS_API._buscarEnIndice(nomenclaturaOriginal);
+      resultado.estrategias.buscarEnIndiceFinal = {
+        ok: !!found,
+        datos: found,
+        ms: Date.now() - t0
+      };
+    } catch (e) {
+      resultado.estrategias.buscarEnIndiceFinal = { error: e.toString() };
+    }
+
+    return Utils.successResponse(resultado);
+  }
+};
+
 /**
  * 🧪 FUNCIÓN DE PRUEBA - Ejecuta esto para verificar la conexión a la API OCDS
  * Ve a Ejecutar > testConexionOCDS en el editor de Apps Script
@@ -4471,7 +5960,7 @@ function testConexionOCDS() {
       followRedirects: true,
       headers: {
         'Accept': 'application/json',
-        'User-Agent': 'SEACE-Intelligence/1.0'
+        'User-Agent': CONFIG.OCDS_API.BROWSER_UA
       }
     });
 

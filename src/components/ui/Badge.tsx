@@ -1,5 +1,6 @@
 import { clsx } from 'clsx';
 import type { ReactNode } from 'react';
+import { EMPRESA_CORTA_MAP } from '../../utils/constants';
 
 interface BadgeProps {
   variant?: 'default' | 'success' | 'warning' | 'danger' | 'info' | 'purple';
@@ -115,7 +116,12 @@ export function EmpresaCortaBadge({ empresa }: { empresa: string | null }) {
     return 'default';
   };
 
-  return <Badge variant={getVariant(empresa)} size="sm">{empresa}</Badge>;
+  const nombreCompleto = EMPRESA_CORTA_MAP[empresa] || empresa;
+  return (
+    <span title={nombreCompleto}>
+      <Badge variant={getVariant(empresa)} size="sm">{empresa}</Badge>
+    </span>
+  );
 }
 
 // v3.1: Badge para tipo de servicio

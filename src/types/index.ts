@@ -198,7 +198,7 @@ export interface MensajeChat {
 
 // ==================== UI STATE ====================
 
-export type VistaActiva = 'dashboard' | 'procesos' | 'seguimiento' | 'mapa' | 'ocds';
+export type VistaActiva = 'dashboard' | 'procesos' | 'seguimiento' | 'mapa' | 'ocds' | 'historicos' | 'grupos' | 'diagnostico';
 
 export interface NotificacionToast {
   id: string;

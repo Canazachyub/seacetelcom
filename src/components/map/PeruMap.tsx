@@ -277,27 +277,27 @@ function PeruMapComponent({ className }: PeruMapProps) {
 
       {/* Leyenda mejorada */}
       <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-slate-200">
-        <p className="font-bold text-slate-700 mb-3 text-sm">Procesos por región</p>
+        <p className="font-bold text-slate-700 mb-3 text-sm">Intensidad de procesos</p>
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-md border border-slate-300" style={{ backgroundColor: COLOR_PALETTE.empty }}></div>
-            <span className="text-slate-600 text-xs">Sin procesos</span>
+            <span className="text-slate-600 text-xs">Sin datos</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-md border border-slate-300" style={{ backgroundColor: COLOR_PALETTE.low }}></div>
-            <span className="text-slate-600 text-xs">1 - 3</span>
+            <span className="text-slate-600 text-xs">Bajo (1–3)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-md border border-slate-300" style={{ backgroundColor: COLOR_PALETTE.medium }}></div>
-            <span className="text-slate-600 text-xs">4 - 10</span>
+            <span className="text-slate-600 text-xs">Medio (4–10)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-md border border-slate-300" style={{ backgroundColor: COLOR_PALETTE.high }}></div>
-            <span className="text-slate-600 text-xs">11 - 20</span>
+            <span className="text-slate-600 text-xs">Alto (11–20)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-md border border-slate-300" style={{ backgroundColor: COLOR_PALETTE.veryHigh }}></div>
-            <span className="text-slate-600 text-xs">20+</span>
+            <span className="text-slate-600 text-xs">Muy alto (20+)</span>
           </div>
         </div>
       </div>
@@ -305,7 +305,7 @@ function PeruMapComponent({ className }: PeruMapProps) {
       {/* Regiones seleccionadas */}
       {filtros.regiones.length > 0 && (
         <div className="absolute top-4 right-4 bg-violet-600 text-white px-4 py-2 rounded-xl shadow-lg text-sm flex items-center gap-2">
-          <span className="font-semibold">{filtros.regiones.length} región(es)</span>
+          <span className="font-semibold">Filtrando {filtros.regiones.length} {filtros.regiones.length === 1 ? 'región' : 'regiones'}</span>
           <span className="text-violet-200">|</span>
           <span className="text-violet-100 max-w-[150px] truncate">
             {filtros.regiones.join(', ')}
@@ -313,6 +313,8 @@ function PeruMapComponent({ className }: PeruMapProps) {
           <button
             onClick={() => setFiltros({ regiones: [] })}
             className="ml-1 hover:bg-violet-500 rounded-full p-1 transition-colors"
+            aria-label="Limpiar filtro de regiones"
+            title="Limpiar filtro de regiones"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -323,7 +325,7 @@ function PeruMapComponent({ className }: PeruMapProps) {
 
       {/* Instrucciones */}
       <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow text-xs text-slate-500">
-        Click en una región para filtrar
+        Selecciona una región para explorar procesos
       </div>
     </div>
   );

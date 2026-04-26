@@ -13,7 +13,10 @@ import {
   Menu,
   Bell,
   ChevronLeft,
-  Database
+  Database,
+  Activity,
+  Sparkles,
+  FolderKanban
 } from 'lucide-react';
 import { clsx } from 'clsx';
 interface LayoutProps {
@@ -26,13 +29,18 @@ export function Layout({ children }: LayoutProps) {
   const cargando = useStore(s => s.cargando);
   const chatAbierto = useStore(s => s.chatAbierto);
   const setChatAbierto = useStore(s => s.setChatAbierto);
+  const procesos = useStore(s => s.procesos);
+  const seguimiento = useStore(s => s.seguimiento);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'procesos', label: 'Procesos', icon: FileText },
-    { id: 'seguimiento', label: 'Seguimiento', icon: Star },
-    { id: 'mapa', label: 'Mapa', icon: Map },
-    { id: 'ocds', label: 'OCDS API', icon: Database },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, count: null as number | null },
+    { id: 'procesos', label: 'Procesos', icon: FileText, count: procesos.length || null },
+    { id: 'seguimiento', label: 'Seguimiento', icon: Star, count: seguimiento.length || null },
+    { id: 'mapa', label: 'Mapa', icon: Map, count: null as number | null },
+    { id: 'ocds', label: 'OCDS API', icon: Database, count: null as number | null },
+    { id: 'historicos', label: 'Históricos', icon: Sparkles, count: null as number | null },
+    { id: 'grupos', label: 'Mis Grupos', icon: FolderKanban, count: null as number | null },
+    { id: 'diagnostico', label: 'Diagnóstico', icon: Activity, count: null as number | null },
   ] as const;
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -48,7 +56,7 @@ export function Layout({ children }: LayoutProps) {
           {sidebarOpen && (
             <div className="flex items-center gap-2">
               <span className="text-2xl">🏛️</span>
-              <span className="font-bold text-gray-900">SEACE</span>
+              <span className="font-bold text-gray-900">SEACE Intelligence</span>
             </div>
           )}
           <button
@@ -67,6 +75,7 @@ export function Layout({ children }: LayoutProps) {
               <button
                 key={item.id}
                 onClick={() => setVistaActiva(item.id)}
+                title={item.count != null ? `${item.label} (${item.count.toLocaleString('es-PE')})` : item.label}
                 className={clsx(
                   'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors',
                   isActive
@@ -76,7 +85,17 @@ export function Layout({ children }: LayoutProps) {
               >
                 <Icon size={20} />
                 {sidebarOpen && (
-                  <span className="font-medium">{item.label}</span>
+                  <>
+                    <span className="font-medium flex-1 text-left">{item.label}</span>
+                    {item.count != null && (
+                      <span className={clsx(
+                        'text-xs font-mono px-1.5 py-0.5 rounded',
+                        isActive ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'
+                      )}>
+                        {item.count.toLocaleString('es-PE')}
+                      </span>
+                    )}
+                  </>
                 )}
               </button>
             );
@@ -115,12 +134,18 @@ export function Layout({ children }: LayoutProps) {
             >
               {cargando ? 'Cargando...' : 'Actualizar'}
             </Button>
-            <button className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 relative">
+            <button
+              className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 relative"
+              title="Notificaciones"
+              aria-label="Notificaciones"
+            >
               <Bell size={20} />
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
             <button
               onClick={() => setChatAbierto(!chatAbierto)}
+              title={chatAbierto ? 'Cerrar chat IA' : 'Abrir chat IA'}
+              aria-label="Asistente IA"
               className={clsx(
                 'p-2 rounded-lg transition-colors',
                 chatAbierto

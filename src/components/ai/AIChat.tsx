@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useStore } from '../../store/useStore';
-import { geminiService } from '../../services/gemini';
+import { deepseekService } from '../../services/deepseek';
 
 
 import type { MensajeChat } from '../../types';
@@ -60,7 +60,7 @@ export function AIChat() {
     setEnviando(true);
 
     try {
-      const respuesta = await geminiService.chatContextual(mensaje, procesosContexto);
+      const respuesta = await deepseekService.chatContextual(mensaje, procesosContexto);
 
       const respuestaIA: MensajeChat = {
         id: (Date.now() + 1).toString(),
@@ -115,7 +115,7 @@ export function AIChat() {
       switch (comando) {
         case '/analizar':
           if (procesosContexto.length === 1) {
-            const analisis = await geminiService.analizarProceso(procesosContexto[0]);
+            const analisis = await deepseekService.analizarProceso(procesosContexto[0]);
             respuesta = `## Análisis de ${procesosContexto[0].NOMENCLATURA}\n\n` +
               `**Resumen:** ${analisis.resumen}\n\n` +
               `**Complejidad:** ${analisis.complejidad}\n\n` +
@@ -123,7 +123,7 @@ export function AIChat() {
               `**Recomendaciones:**\n${analisis.recomendaciones.map(r => `- ${r}`).join('\n')}\n\n` +
               `**Palabras clave:** ${analisis.palabrasClave.join(', ')}`;
           } else {
-            respuesta = await geminiService.chatContextual(
+            respuesta = await deepseekService.chatContextual(
               'Analiza estos procesos y dame un resumen de cada uno.',
               procesosContexto
             );
@@ -134,7 +134,7 @@ export function AIChat() {
           if (procesosContexto.length < 2) {
             respuesta = 'Necesitas seleccionar al menos 2 procesos para comparar.';
           } else {
-            const comparacion = await geminiService.compararProcesos(procesosContexto);
+            const comparacion = await deepseekService.compararProcesos(procesosContexto);
             respuesta = `## Comparación de Procesos\n\n` +
               `**Similitudes:**\n${comparacion.similitudes.map(s => `- ${s}`).join('\n')}\n\n` +
               `**Diferencias:**\n${comparacion.diferencias.map(d => `- ${d}`).join('\n')}\n\n` +
@@ -144,7 +144,7 @@ export function AIChat() {
           break;
 
         case '/resumen':
-          const resumen = await geminiService.generarResumenEjecutivo(procesosContexto);
+          const resumen = await deepseekService.generarResumenEjecutivo(procesosContexto);
           respuesta = `## Resumen Ejecutivo\n\n` +
             `${resumen.resumen}\n\n` +
             `**Oportunidades destacadas:**\n${resumen.oportunidadesDestacadas.map(o => `- ${o}`).join('\n')}\n\n` +

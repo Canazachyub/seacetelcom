@@ -9,10 +9,14 @@ const PeruMap = lazy(() => import('./components/map/PeruMap').then(m => ({ defau
 const AIChat = lazy(() => import('./components/ai/AIChat').then(m => ({ default: m.AIChat })));
 const OCDSTester = lazy(() => import('./components/ocds/OCDSTester').then(m => ({ default: m.OCDSTester })));
 const SeguimientoDetalleCompleto = lazy(() => import('./components/seguimiento/SeguimientoDetalleCompleto').then(m => ({ default: m.SeguimientoDetalleCompleto })));
+const DiagnosticoView = lazy(() => import('./components/diagnostico/DiagnosticoView').then(m => ({ default: m.DiagnosticoView })));
+const HistoricosView = lazy(() => import('./components/historicos/HistoricosView').then(m => ({ default: m.HistoricosView })));
+const GruposView = lazy(() => import('./components/grupos/GruposView').then(m => ({ default: m.GruposView })));
 import { Card, CardHeader } from './components/ui/Card';
 import { Button } from './components/ui/Button';
 import { Input } from './components/ui/Input';
 import { EstadoBadge, PrioridadBadge } from './components/ui/Badge';
+import { ToastContainer } from './components/ui/Toast';
 import { Settings, Save, ExternalLink, Star, Search, X, MapPin, TrendingUp, Calendar, Building2, FileText, Database, Edit2, Check, XCircle } from 'lucide-react';
 import type { Proceso } from './types';
 
@@ -49,6 +53,12 @@ function App() {
         return <MapaView />;
       case 'ocds':
         return <OCDSTester />;
+      case 'historicos':
+        return <HistoricosView />;
+      case 'grupos':
+        return <GruposView />;
+      case 'diagnostico':
+        return <DiagnosticoView />;
       default:
         return <ConfiguracionView configUrl={configUrl} setConfigUrl={setConfigUrl} guardarConfig={guardarConfig} />;
     }
@@ -62,6 +72,7 @@ function App() {
       <Suspense fallback={null}>
         <AIChat />
       </Suspense>
+      <ToastContainer />
     </Layout>
   );
 }
@@ -71,6 +82,7 @@ function SeguimientoView() {
   const procesos = useStore(s => s.procesos);
   const cargarSeguimiento = useStore(s => s.cargarSeguimiento);
   const actualizarSeguimiento = useStore(s => s.actualizarSeguimiento);
+  const setVistaActiva = useStore(s => s.setVistaActiva);
   const [selectedProceso, setSelectedProceso] = useState<string | null>(null);
 
   // Estados para edición
@@ -206,23 +218,26 @@ function SeguimientoView() {
         <Card>
           <div className="text-center">
             <p className="text-3xl font-bold text-gray-900">{seguimiento.length}</p>
-            <p className="text-sm text-gray-500">Total en seguimiento</p>
+            <p className="text-sm text-gray-500">Procesos activos</p>
+            <p className="text-xs text-gray-400 mt-0.5">Supervisados</p>
           </div>
         </Card>
         <Card>
           <div className="text-center">
-            <p className="text-3xl font-bold text-green-600">
+            <p className="text-3xl font-bold text-emerald-600">
               {seguimiento.filter(s => s.ESTADO_INTERES === 'INSCRITO').length}
             </p>
             <p className="text-sm text-gray-500">Inscritos</p>
+            <p className="text-xs text-gray-400 mt-0.5">Ya participando</p>
           </div>
         </Card>
         <Card>
           <div className="text-center">
-            <p className="text-3xl font-bold text-amber-600">
+            <p className="text-3xl font-bold text-red-600">
               {seguimiento.filter(s => s.PRIORIDAD === 'ALTA').length}
             </p>
-            <p className="text-sm text-gray-500">Prioridad Alta</p>
+            <p className="text-sm text-gray-500">Requieren acción</p>
+            <p className="text-xs text-gray-400 mt-0.5">Prioridad alta</p>
           </div>
         </Card>
         <Card>
@@ -233,7 +248,8 @@ function SeguimientoView() {
                 return etapa?.ESTADO === 'EN_CURSO' || etapa?.ESTADO === 'PENDIENTE';
               }).length}
             </p>
-            <p className="text-sm text-gray-500">Por Presentar</p>
+            <p className="text-sm text-gray-500">Por presentar</p>
+            <p className="text-xs text-gray-400 mt-0.5">Fase activa</p>
           </div>
         </Card>
       </div>
@@ -241,17 +257,31 @@ function SeguimientoView() {
       {/* Lista de seguimiento */}
       <Card>
         <div className="flex items-center justify-between mb-4">
-          <CardHeader title="Procesos en Seguimiento" icon={<Star size={20} />} />
+          <CardHeader
+            title="Supervisa tus procesos"
+            subtitle={`${seguimiento.length} ${seguimiento.length === 1 ? 'activo' : 'activos'} · ${seguimiento.filter(s => s.PRIORIDAD === 'ALTA').length} de prioridad alta`}
+            icon={<Star size={20} />}
+          />
           <Button variant="outline" size="sm" onClick={() => cargarSeguimiento()}>
-            Actualizar
+            Sincronizar ahora
           </Button>
         </div>
 
         {seguimiento.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             <Star size={48} className="mx-auto mb-3 text-gray-300" />
-            <p className="font-medium">No tienes procesos en seguimiento</p>
-            <p className="text-sm mt-1">Ve a la vista de Procesos y agrega algunos</p>
+            <p className="font-medium text-gray-700">Aún no sigues ningún proceso</p>
+            <p className="text-sm mt-2 text-gray-500 max-w-sm mx-auto">
+              Comienza a supervisar licitaciones públicas para no perder oportunidades ni plazos.
+            </p>
+            <Button
+              variant="primary"
+              size="sm"
+              className="mt-4"
+              onClick={() => setVistaActiva('procesos')}
+            >
+              Explorar procesos →
+            </Button>
           </div>
         ) : (
           <div className="space-y-4">

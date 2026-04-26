@@ -34,6 +34,7 @@ jobs:
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
           VITE_SHEETS_URL: ${{ secrets.VITE_SHEETS_URL }}
+          VITE_DEEPSEEK_API_KEYS: ${{ secrets.VITE_DEEPSEEK_API_KEYS }}
           VITE_GEMINI_API_KEYS: ${{ secrets.VITE_GEMINI_API_KEYS }}
 
       - name: Setup Pages
