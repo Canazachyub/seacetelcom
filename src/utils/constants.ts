@@ -1,4 +1,5 @@
-import type { RegionPeru } from '../types';
+import type { Proceso, RegionPeru } from '../types';
+import { empresaDesdeSigla } from './telcom';
 
 // ==================== REGIONES DEL PERÚ ====================
 
@@ -170,5 +171,37 @@ export function humanizarNomenclatura(nom: string | null | undefined): string {
     return p;
   });
   return humanizadas.join(' · ');
+}
+
+// Patrones para reclasificar empresas mal catalogadas como "OTRA ELECTRICA"
+// (el nombre legal no siempre contiene la abreviatura usada en el GAS)
+const RECLASIFICACIONES: Array<{ patron: RegExp; empresa: string }> = [
+  { patron: /ELECTRICIDAD.*PUNO|ELECTRO.*PUNO|PUNO.*ELECTRI|ELPU/i, empresa: 'ELECTRO PUNO' },
+  { patron: /ELECTRO.*TOCACHE|TOCACHE/i, empresa: 'ELECTRO TOCACHE' },
+  { patron: /ELECTRO.*DUNAS|DUNAS/i, empresa: 'ELECTRO DUNAS' },
+];
+
+/**
+ * Corrige EMPRESA_CORTA mal catalogada por los patrones del GAS.
+ * 1) La sigla de la nomenclatura manda (ej. el patrón GAS "SUR.*ESTE" metía a
+ *    SEAL — "Sur Oeste" — dentro de ELSE; ELPU, EO-L o ELECTRO UCAYALI quedaban vacíos).
+ * 2) Si no hay sigla reconocible y quedó "OTRA ELECTRICA", se prueban los patrones
+ *    sobre entidad + nomenclatura.
+ */
+export function normalizarProcesos(procesos: Proceso[]): Proceso[] {
+  return procesos.map((p) => {
+    const porSigla = empresaDesdeSigla(p.NOMENCLATURA);
+    if (porSigla) {
+      return porSigla === p.EMPRESA_CORTA ? p : { ...p, EMPRESA_CORTA: porSigla };
+    }
+    if (p.EMPRESA_CORTA !== 'OTRA ELECTRICA') return p;
+    const texto = `${p.ENTIDAD || ''} ${p.NOMENCLATURA || ''}`;
+    for (const { patron, empresa } of RECLASIFICACIONES) {
+      if (patron.test(texto)) {
+        return { ...p, EMPRESA_CORTA: empresa };
+      }
+    }
+    return p;
+  });
 }
 

@@ -36,3 +36,8 @@ dist-ssr
 # Local Claude Code config and memory
 .claude/
 memory/
+
+# Docs internos de estrategia (DNIs, montos, rivales): solo locales / vault, repo público
+docs/07-INTEGRACION-CEREBRO-OBSIDIAN.md
+docs/08-RESPUESTAS-TELCOM.md
+docs/09-PERFIL-EXPERIENCIA-RADAR.md

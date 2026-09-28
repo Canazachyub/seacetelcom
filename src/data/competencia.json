@@ -1,0 +1,200 @@
+{
+ "generado": "2026-09-28",
+ "fuente": "01_GERENCIA/experiencia/web (vault INGENIERIA TELCOM)",
+ "entidades": {
+  "ELECTRO ORIENTE": {
+   "procesos": 1,
+   "presentados": 0,
+   "ganados": 0,
+   "telcomPctVr": null,
+   "rivales": [
+    {
+     "ruc": "20606058170",
+     "nombre": "BRITELL SERVICE E.I.R.L.",
+     "procesos": 1,
+     "ganados": 0,
+     "pctVr": null
+    },
+    {
+     "ruc": "20605576304",
+     "nombre": "G & F ELECTRIC SOLUCIONES S.A.C.",
+     "procesos": 1,
+     "ganados": 0,
+     "pctVr": null
+    }
+   ]
+  },
+  "ELECTRO PUNO": {
+   "procesos": 1,
+   "presentados": 0,
+   "ganados": 0,
+   "telcomPctVr": null,
+   "rivales": [
+    {
+     "ruc": "20610807071",
+     "nombre": "(… DE METROLOGÍA — nombre cortado en el acta)",
+     "procesos": 1,
+     "ganados": 0,
+     "pctVr": null
+    },
+    {
+     "ruc": "20608853830",
+     "nombre": "CONSORCIO ELECTRICO PUNO",
+     "procesos": 1,
+     "ganados": 0,
+     "pctVr": null
+    },
+    {
+     "ruc": "20490069420",
+     "nombre": "GENERACION ANDREA (RUC de MAFER Ingenieros)",
+     "procesos": 1,
+     "ganados": 0,
+     "pctVr": null
+    }
+   ]
+  },
+  "ELECTRO UCAYALI": {
+   "procesos": 4,
+   "presentados": 3,
+   "ganados": 3,
+   "telcomPctVr": 93.5,
+   "rivales": [
+    {
+     "ruc": "20601883601",
+     "nombre": "BLUE ENERGY SERVICIOS E.I.R.L.",
+     "procesos": 1,
+     "ganados": 0,
+     "pctVr": 109.2
+    },
+    {
+     "ruc": "20605391436",
+     "nombre": "MARONS ELECTRIC E.I.R.L.",
+     "procesos": 1,
+     "ganados": 0,
+     "pctVr": 93.0
+    },
+    {
+     "ruc": "20603359411",
+     "nombre": "CONSORCIO INGENIERIA AMAZONICA",
+     "procesos": 1,
+     "ganados": 0,
+     "pctVr": 77.5
+    },
+    {
+     "ruc": "20614553236",
+     "nombre": "ASVE",
+     "procesos": 1,
+     "ganados": 0,
+     "pctVr": 76.2
+    }
+   ]
+  },
+  "ELECTROSUR": {
+   "procesos": 3,
+   "presentados": 3,
+   "ganados": 3,
+   "telcomPctVr": 61.8,
+   "rivales": [
+    {
+     "ruc": "20318056600",
+     "nombre": "JJ EJECUTORES E.I.R.L.",
+     "procesos": 1,
+     "ganados": 0,
+     "pctVr": 76.4
+    },
+    {
+     "ruc": "20539600657",
+     "nombre": "BAUM INGENIEROS E.I.R.L.",
+     "procesos": 1,
+     "ganados": 0,
+     "pctVr": 81.8
+    },
+    {
+     "ruc": "20607139271",
+     "nombre": "RODAS CONTRATISTAS E.I.R.L.",
+     "procesos": 1,
+     "ganados": 0,
+     "pctVr": 59.1
+    }
+   ]
+  },
+  "ELSE": {
+   "procesos": 9,
+   "presentados": 4,
+   "ganados": 4,
+   "telcomPctVr": 71.5,
+   "rivales": [
+    {
+     "ruc": "20608415964",
+     "nombre": "LJE CONTRATISTAS GENERALES E.I.R.L.",
+     "procesos": 3,
+     "ganados": 0,
+     "pctVr": null
+    },
+    {
+     "ruc": "20606970910",
+     "nombre": "CONSORCIO MARONS",
+     "procesos": 2,
+     "ganados": 0,
+     "pctVr": 79.9
+    },
+    {
+     "ruc": "20605391436",
+     "nombre": "MARONS ELECTRIC E.I.R.L.",
+     "procesos": 1,
+     "ganados": 0,
+     "pctVr": 66.4
+    },
+    {
+     "ruc": "20603914920",
+     "nombre": "ROMAGUS INGENIEROS E.I.R.L.",
+     "procesos": 1,
+     "ganados": 0,
+     "pctVr": null
+    },
+    {
+     "ruc": "",
+     "nombre": "persona natural",
+     "procesos": 1,
+     "ganados": 0,
+     "pctVr": null
+    },
+    {
+     "ruc": "20603359411",
+     "nombre": "CONSORCIO INGENIERIA Y SOLUCION APURIMAC",
+     "procesos": 1,
+     "ganados": 0,
+     "pctVr": null
+    },
+    {
+     "ruc": "20490069420",
+     "nombre": "MAFER INGENIEROS S.A.C.",
+     "procesos": 1,
+     "ganados": 0,
+     "pctVr": 80.9
+    },
+    {
+     "ruc": "20450632598",
+     "nombre": "CONSORCIO ELECTRICO SUR ESTE",
+     "procesos": 1,
+     "ganados": 0,
+     "pctVr": 116.9
+    },
+    {
+     "ruc": "20615004082",
+     "nombre": "CONSORCIO GENERACIÓN ANDREA",
+     "procesos": 1,
+     "ganados": 0,
+     "pctVr": 89.1
+    },
+    {
+     "ruc": "20442346292",
+     "nombre": "CONSORCIO PACIFICO",
+     "procesos": 1,
+     "ganados": 0,
+     "pctVr": 131.4
+    }
+   ]
+  }
+ }
+}

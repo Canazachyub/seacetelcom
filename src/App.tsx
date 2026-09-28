@@ -11,6 +11,7 @@ const OCDSTester = lazy(() => import('./components/ocds/OCDSTester').then(m => (
 const SeguimientoDetalleCompleto = lazy(() => import('./components/seguimiento/SeguimientoDetalleCompleto').then(m => ({ default: m.SeguimientoDetalleCompleto })));
 const DiagnosticoView = lazy(() => import('./components/diagnostico/DiagnosticoView').then(m => ({ default: m.DiagnosticoView })));
 const HistoricosView = lazy(() => import('./components/historicos/HistoricosView').then(m => ({ default: m.HistoricosView })));
+const RadarView = lazy(() => import('./components/radar/RadarView').then(m => ({ default: m.RadarView })));
 const GruposView = lazy(() => import('./components/grupos/GruposView').then(m => ({ default: m.GruposView })));
 import { Card, CardHeader } from './components/ui/Card';
 import { Button } from './components/ui/Button';
@@ -38,6 +39,8 @@ function App() {
 
   const renderVista = () => {
     switch (vistaActiva) {
+      case 'radar':
+        return <RadarView />;
       case 'dashboard':
         return <Dashboard />;
       case 'procesos':

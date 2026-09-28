@@ -889,6 +889,19 @@ export async function getDatosSeace(nomenclatura: string): Promise<DatosSeace | 
   return result.datos;
 }
 
+export interface CronogramaResumen {
+  nomenclatura: string;
+  clave: string;
+  fechaScraping: string;
+  etapas: Array<{ etapa: string; fin: string }>;
+}
+
+/** Fin de cada etapa de todos los procesos de DATOS_SEACE en una llamada (Radar: hábil / no hábil). */
+export async function getCronogramasSeace(): Promise<CronogramaResumen[]> {
+  const result = await fetchAPI<{ cronogramas: CronogramaResumen[] }>('getCronogramasSeace');
+  return result.cronogramas || [];
+}
+
 export async function getEstadoScraping(nomenclatura: string): Promise<{
   estado: 'SUCCESS' | 'ERROR' | 'PENDING' | 'NO_SCRAPEADO';
   fechaScraping: string | null;

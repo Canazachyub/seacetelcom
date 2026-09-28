@@ -14,6 +14,7 @@ import type {
 } from '../types';
 import * as api from '../services/api';
 import { cachedFetch, cacheInvalidators } from '../services/cache';
+import { normalizarProcesos } from '../utils/constants';
 
 // ==================== ESTADO ====================
 
@@ -168,7 +169,7 @@ export const useStore = create<StoreState>()(
       estadisticas: null,
       regionesData: {},
       filtros: filtrosIniciales,
-      vistaActiva: 'dashboard',
+      vistaActiva: 'radar',
       procesoSeleccionado: null,
       procesosSeleccionados: [],
       cargando: false,
@@ -204,10 +205,11 @@ export const useStore = create<StoreState>()(
             undefined,
             () => api.getProcesos()
           );
-          const indices = buildIndices(response.procesos);
+          const procesos = normalizarProcesos(response.procesos);
+          const indices = buildIndices(procesos);
           set({
-            procesos: response.procesos,
-            procesosFiltrados: response.procesos,
+            procesos,
+            procesosFiltrados: procesos,
             ...indices,
             cargando: false
           });

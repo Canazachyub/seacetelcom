@@ -16,7 +16,8 @@ import {
   Database,
   Activity,
   Sparkles,
-  FolderKanban
+  FolderKanban,
+  Radar
 } from 'lucide-react';
 import { clsx } from 'clsx';
 interface LayoutProps {
@@ -33,6 +34,7 @@ export function Layout({ children }: LayoutProps) {
   const seguimiento = useStore(s => s.seguimiento);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const menuItems = [
+    { id: 'radar', label: 'Radar Telcom', icon: Radar, count: null as number | null },
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, count: null as number | null },
     { id: 'procesos', label: 'Procesos', icon: FileText, count: procesos.length || null },
     { id: 'seguimiento', label: 'Seguimiento', icon: Star, count: seguimiento.length || null },

@@ -62,7 +62,7 @@ const CONFIG = {
   // Código del Worker: ver instrucciones en README. La URL del Worker
   // debe apuntar al mismo path /api/v1 del backend original.
   OCDS_API: {
-    BASE_URL: 'https://visitor-organizing-mortgages-defence.trycloudflare.com',
+    BASE_URL: 'https://seace-ocds-proxy.canazach12.workers.dev',
     // Endpoints según documentación oficial
     RELEASES_ENDPOINT: '/releases',           // GET - búsqueda con criterios
     RELEASE_BY_ID: '/release',                // GET /release/{sourceId}/{tenderId}
@@ -366,7 +366,57 @@ const Utils = {
    */
   generarClaveUnica: function(nomenclatura, fecha) {
     const fechaStr = Utils.normalizarFecha(fecha);
-    return nomenclatura + '|' + fechaStr;
+    return Utils.claveNomenclatura(nomenclatura) + '|' + fechaStr;
+  },
+
+  /**
+   * Clave de comparación de nomenclaturas: mayúsculas, espacios/guiones como un solo
+   * separador y sin ceros a la izquierda. "CP SER-SM-07-2026-ELSE-1" y
+   * "CP-SER-SM-7-2026-ELSE-1" dan la misma clave. Solo para comparar: en las hojas
+   * se guarda siempre la nomenclatura exacta.
+   */
+  claveNomenclatura: function(nom) {
+    if (!nom) return '';
+    return String(nom)
+      .toUpperCase()
+      .replace(/[\u00A0\u200B-\u200D\uFEFF]/g, ' ')
+      .split(/[\s\-_]+/)
+      .filter(function(t) { return t; })
+      .map(function(t) { return /^\d+$/.test(t) ? String(parseInt(t, 10)) : t; })
+      .join('-');
+  },
+
+  /**
+   * Empresa a partir de la sigla de la nomenclatura (lo que va entre el año y la
+   * convocatoria: "AS-SM-5-2024-EO-L-1" -> "EO-L"). Es más fiable que el nombre de la
+   * entidad. Devuelve '' si la sigla no se reconoce.
+   */
+  SIGLAS_EMPRESA: [
+    [/^ELSE\b/, 'ELSE'],
+    [/^ELPU\b|PUNO/, 'ELECTRO PUNO'],
+    [/UCAYALI/, 'ELECTRO UCAYALI'],
+    [/^EO[\s\-\/.]|^EO$|ORIENTE/, 'ELECTRO ORIENTE'],
+    [/ELECTROSUR|^ELS\b/, 'ELECTROSUR'],
+    [/^SEAL\b/, 'SEAL'],
+    [/ELCTO|ELECTROCENTRO/, 'ELECTROCENTRO'],
+    [/ENOSA|NOROESTE/, 'ENOSA'],
+    [/HIDRANDINA/, 'HIDRANDINA'],
+    [/ADINELSA/, 'ADINELSA'],
+    [/EGESUR/, 'EGESUR'],
+    [/SEDAPAL/, 'SEDAPAL'],
+    [/OSINERGMIN/, 'OSINERGMIN'],
+    [/TOCACHE/, 'ELECTRO TOCACHE'],
+    [/DUNAS/, 'ELECTRO DUNAS']
+  ],
+
+  empresaDesdeSigla: function(nomenclatura) {
+    const m = String(nomenclatura || '').toUpperCase().match(/-20\d{2}-(.+?)(?:-\d+)?\.?$/);
+    if (!m) return '';
+    const sigla = m[1].trim();
+    for (let i = 0; i < Utils.SIGLAS_EMPRESA.length; i++) {
+      if (Utils.SIGLAS_EMPRESA[i][0].test(sigla)) return Utils.SIGLAS_EMPRESA[i][1];
+    }
+    return '';
   },
 
   // ==================== CLASIFICACIÓN AUTOMÁTICA (v3.1) ====================
@@ -396,10 +446,10 @@ const Utils = {
     'ENEL': ['ENEL.*DISTRIB', 'EDELNOR'],
 
     // ZONA SUR
-    'ELSE': ['ELSE', 'SUR.*ESTE', 'ELECTRO.*SUR.*ESTE'],
+    'ELSE': ['ELSE', 'SUR\\s+ESTE', 'ELECTRO.*SUR\\s+ESTE'],
     'SEAL': ['SEAL', 'SUR.*OESTE'],
     'ELECTROSUR': ['ELECTROSUR'],
-    'ELECTRO PUNO': ['ELECTRO.*PUNO', 'PUNO.*ELECTRI'],
+    'ELECTRO PUNO': ['ELECTRO.*PUNO', 'PUNO.*ELECTRI', 'ELECTRICIDAD.*PUNO', 'ELPU'],
 
     // ZONA SELVA
     'ELECTRO UCAYALI': ['ELECTRO.*UCAYALI', 'UCAYALI.*ELECTR'],
@@ -776,6 +826,8 @@ const Router = {
       // === v3.2: ENLACES RÁPIDOS Y SCRAPING SEACE (stubs/lecturas ligeras) ===
       'getEnlacesRapidos': { handler: EnlacesRapidos.getAll, method: 'GET' },
       'getDatosSeace': { handler: DatosSeaceLookup.getByNomenclatura, method: 'GET' },
+      'getCronogramasSeace': { handler: DatosSeaceLookup.cronogramas, method: 'GET' },
+      'importarSeaceImport': { handler: Import.importarFilas, method: 'ANY' },
       'guardarDatosSeace': { handler: DatosSeaceLookup.guardar, method: 'ANY' },
       'getEstadoScraping': { handler: EstadoScraping.get, method: 'GET' },
 
@@ -932,6 +984,49 @@ const Procesos = {
 
 const Import = {
   /**
+   * Recibe filas del scraper (mismas 10 columnas de SEACE_IMPORT), las agrega a la
+   * hoja SEACE_IMPORT y ejecuta procesar(). Evita el copiar/pegar manual del CSV.
+   * procesar() ya deduplica por (clave de nomenclatura, fecha de publicación).
+   * @param {Object} params - { filas: Array<Array|Object> }
+   */
+  importarFilas: function(params) {
+    let filas = params && params.filas;
+    if (typeof filas === 'string') {
+      try { filas = JSON.parse(filas); } catch (e) { return Utils.errorResponse('filas no es JSON válido'); }
+    }
+    if (!Array.isArray(filas) || filas.length === 0) {
+      return Utils.errorResponse('Falta el parámetro filas (array con las columnas de SEACE_IMPORT)');
+    }
+
+    const importSheet = Utils.getSheetSafe(CONFIG.SHEETS.IMPORT);
+    if (!importSheet) return Utils.errorResponse('Hoja SEACE_IMPORT no encontrada');
+
+    const claves = ['N°', 'Nombre o Sigla de la Entidad', 'Fecha y Hora de Publicacion', 'Nomenclatura',
+      'Reiniciado Desde', 'Objeto de Contratación', 'Descripción de Objeto',
+      'VR / VE / Cuantía de la contratación', 'Moneda', 'Versión SEACE'];
+    const valores = filas.map(function(f) {
+      const arr = Array.isArray(f) ? f : claves.map(function(k) { return f[k] !== undefined ? f[k] : ''; });
+      const fila = arr.slice(0, 10);
+      while (fila.length < 10) fila.push('');
+      return fila;
+    }).filter(function(f) { return String(f[IMPORT_COLS.NOMENCLATURA] || '').trim(); });
+
+    if (valores.length === 0) return Utils.errorResponse('Ninguna fila trae nomenclatura');
+
+    const lock = LockService.getScriptLock();
+    lock.waitLock(30000);
+    try {
+      importSheet.getRange(importSheet.getLastRow() + 1, 1, valores.length, 10).setValues(valores);
+      SpreadsheetApp.flush();
+      const res = Import.procesar(params);
+      res.recibidas = valores.length;
+      return res;
+    } finally {
+      lock.releaseLock();
+    }
+  },
+
+  /**
    * Procesa registros de SEACE_IMPORT a BD_PROCESOS
    * Usa clave compuesta (NOMENCLATURA + FECHA) para permitir reiniciados
    */
@@ -1059,7 +1154,7 @@ const Import = {
     const descripcion = row[IMPORT_COLS.DESCRIPCION] || '';
 
     // v3.1: Clasificación automática (traducido del script Python)
-    const empresaCorta = Utils.clasificarEmpresa(entidad);
+    const empresaCorta = Utils.empresaDesdeSigla(nomenclatura) || Utils.clasificarEmpresa(entidad);
     const estadoFecha = Utils.clasificarEstadoFecha(fechaPubRaw);
     const tipoServicio = Utils.clasificarTipoServicio(objeto || descripcion);
 
@@ -2610,7 +2705,7 @@ const GruposHistoricos = {
       for (let i = 1; i < bdData.length; i++) {
         const nom = bdData[i][BD_COLS.NOMENCLATURA];
         if (nom) {
-          bdIndex[String(nom).trim()] = {
+          bdIndex[Utils.claveNomenclatura(nom)] = {
             valor: Number(bdData[i][BD_COLS.VALOR]) || 0
           };
         }
@@ -2630,7 +2725,7 @@ const GruposHistoricos = {
           for (let i = 1; i < seaceData.length; i++) {
             const nom = seaceData[i][idxNom];
             if (nom) {
-              seaceIndex[String(nom).trim()] = String(seaceData[i][idxEstado] || '').trim().toLowerCase();
+              seaceIndex[Utils.claveNomenclatura(nom)] = String(seaceData[i][idxEstado] || '').trim().toLowerCase();
             }
           }
         }
@@ -2648,7 +2743,7 @@ const GruposHistoricos = {
 
         // Stats de montos
         const valoresRef = nomenclaturas.map(function(n) {
-          const info = bdIndex[String(n).trim()];
+          const info = bdIndex[Utils.claveNomenclatura(n)];
           return info ? info.valor : 0;
         });
         const positivos = valoresRef.filter(function(v) { return v > 0; });
@@ -2672,7 +2767,7 @@ const GruposHistoricos = {
         // Stats de scraping
         let scrapeados = 0, pendientes = 0, conError = 0;
         nomenclaturas.forEach(function(n) {
-          const estado = seaceIndex[String(n).trim()];
+          const estado = seaceIndex[Utils.claveNomenclatura(n)];
           if (estado === 'completo') scrapeados++;
           else if (estado === 'error') conError++;
           else pendientes++; // incluye 'pendiente' y ausente
@@ -2726,7 +2821,7 @@ const GruposHistoricos = {
       for (let i = 1; i < bdData.length; i++) {
         const nom = bdData[i][BD_COLS.NOMENCLATURA];
         if (nom) {
-          bdIndex[String(nom).trim()] = {
+          bdIndex[Utils.claveNomenclatura(nom)] = {
             descripcion: bdData[i][BD_COLS.DESCRIPCION] || '',
             entidad: bdData[i][BD_COLS.ENTIDAD] || '',
             valor: Number(bdData[i][BD_COLS.VALOR]) || 0,
@@ -2752,7 +2847,7 @@ const GruposHistoricos = {
             if (nom) {
               const reg = {};
               seaceHeaders.forEach(function(h, idx) { reg[h] = seaceData[i][idx]; });
-              seaceIndex[String(nom).trim()] = reg;
+              seaceIndex[Utils.claveNomenclatura(nom)] = reg;
             }
           }
         }
@@ -2760,7 +2855,7 @@ const GruposHistoricos = {
     }
 
     const historicos = nomenclaturas.map(function(n) {
-      const key = String(n).trim();
+      const key = Utils.claveNomenclatura(n);
       const bd = bdIndex[key] || {};
       const seace = seaceIndex[key];
 
@@ -2840,7 +2935,7 @@ const GruposHistoricos = {
           for (let i = 1; i < seaceData.length; i++) {
             const nom = seaceData[i][idxNom];
             if (nom) {
-              seaceIndex[String(nom).trim()] = {
+              seaceIndex[Utils.claveNomenclatura(nom)] = {
                 estado: idxEstado >= 0 ? String(seaceData[i][idxEstado] || 'pendiente').trim().toLowerCase() : 'pendiente',
                 fechaScraping: idxFecha >= 0 ? seaceData[i][idxFecha] : null,
                 error: idxError >= 0 ? (seaceData[i][idxError] || '') : ''
@@ -2852,7 +2947,7 @@ const GruposHistoricos = {
     }
 
     const estados = nomenclaturas.map(function(n) {
-      const info = seaceIndex[String(n).trim()];
+      const info = seaceIndex[Utils.claveNomenclatura(n)];
       if (!info) {
         return { nomenclatura: n, estado: 'pendiente', fechaScraping: null, error: '' };
       }
@@ -4244,7 +4339,7 @@ function menuCrearHojasBase() {
         [5, 'Electrocentro S.A.', 'ELECTROCENTRO', 'ELECTROCENTRO|ELECTRO.*CENTRO', '#F3E5F5', true],
         [6, 'Electronoroeste S.A. - ENOSA', 'ENOSA', 'ENOSA|NOR.*OESTE|ELECTRONOROESTE', '#E0F7FA', true],
         [7, 'Empresa de Generación Eléctrica de Arequipa S.A. - EGASA', 'EGASA', 'EGASA|GENERACION.*AREQUIPA', '#FFF8E1', true],
-        [8, 'Empresa Regional de Servicio Público de Electricidad del Sur Este S.A.A. - ELSE', 'ELSE', 'ELSE|SUR.*ESTE', '#E8EAF6', true],
+        [8, 'Empresa Regional de Servicio Público de Electricidad del Sur Este S.A.A. - ELSE', 'ELSE', 'ELSE|SUR\\s+ESTE', '#E8EAF6', true],
         [9, 'Empresa Regional de Servicio Público de Electricidad - ELECTRO ORIENTE', 'ELECTRO ORIENTE', 'ELECTRO.*ORIENTE|ORIENTE', '#EFEBE9', true],
         [10, 'Empresa de Administración de Infraestructura Eléctrica S.A. - ADINELSA', 'ADINELSA', 'ADINELSA', '#ECEFF1', true],
         [11, 'Empresa Regional de Servicio Público de Electricidad ELECTROSUR S.A.', 'ELECTROSUR', 'ELECTROSUR', '#FBE9E7', true],
@@ -4543,7 +4638,7 @@ const EmpresasElectricas = {
       [5, 'Electrocentro S.A.', 'ELECTROCENTRO', 'ELECTROCENTRO|ELECTRO.*CENTRO', '#F3E5F5', true],
       [6, 'Electronoroeste S.A. - ENOSA', 'ENOSA', 'ENOSA|NOR.*OESTE|ELECTRONOROESTE', '#E0F7FA', true],
       [7, 'Empresa de Generación Eléctrica de Arequipa S.A. - EGASA', 'EGASA', 'EGASA|GENERACION.*AREQUIPA', '#FFF8E1', true],
-      [8, 'Empresa Regional de Servicio Público de Electricidad del Sur Este S.A.A. - ELSE', 'ELSE', 'ELSE|SUR.*ESTE', '#E8EAF6', true],
+      [8, 'Empresa Regional de Servicio Público de Electricidad del Sur Este S.A.A. - ELSE', 'ELSE', 'ELSE|SUR\\s+ESTE', '#E8EAF6', true],
       [9, 'Empresa Regional de Servicio Público de Electricidad - ELECTRO ORIENTE', 'ELECTRO ORIENTE', 'ELECTRO.*ORIENTE|ORIENTE', '#EFEBE9', true],
       [10, 'Empresa de Administración de Infraestructura Eléctrica S.A. - ADINELSA', 'ADINELSA', 'ADINELSA', '#ECEFF1', true],
       [11, 'Empresa Regional de Servicio Público de Electricidad ELECTROSUR S.A.', 'ELECTROSUR', 'ELECTROSUR', '#FBE9E7', true],
@@ -5165,6 +5260,53 @@ const EnlacesRapidos = {
 
 const DatosSeaceLookup = {
   /**
+   * Resumen de plazos de TODOS los procesos de DATOS_SEACE en una sola llamada
+   * (para el Radar: hábil / no hábil). Devuelve por nomenclatura el fin de cada
+   * etapa del cronograma guardado por el scraper u OCDS.
+   * @returns {{cronogramas: Array<{nomenclatura, clave, fechaScraping, etapas: Array<{etapa, fin}>}>}}
+   */
+  cronogramas: function() {
+    const sheet = Utils.getSheetSafe(CONFIG.SHEETS.DATOS_SEACE);
+    if (!sheet || sheet.getLastRow() < 2) return Utils.successResponse({ cronogramas: [] });
+
+    const data = sheet.getDataRange().getValues();
+    const h = data[0];
+    const iNom = h.indexOf('NOMENCLATURA');
+    const iCro = h.indexOf('CRONOGRAMA_JSON');
+    const iFec = h.indexOf('FECHA_SCRAPING');
+    if (iNom < 0 || iCro < 0) return Utils.successResponse({ cronogramas: [] });
+
+    const tz = Session.getScriptTimeZone();
+    const aTexto = function(v) {
+      if (!v) return '';
+      if (v instanceof Date) return Utilities.formatDate(v, tz, "yyyy-MM-dd'T'HH:mm:ss");
+      return String(v);
+    };
+
+    const salida = [];
+    for (let i = 1; i < data.length; i++) {
+      const nom = data[i][iNom];
+      if (!nom) continue;
+      let crono = [];
+      try { crono = data[i][iCro] ? JSON.parse(data[i][iCro]) : []; } catch (e) { crono = []; }
+      if (!Array.isArray(crono)) crono = [];
+      const etapas = crono.map(function(et) {
+        return {
+          etapa: String(et.etapaLabel || et.etapa || et.Etapa || ''),
+          fin: aTexto(et.fechaFin || et.fecha_fin || et['Fecha Fin'] || et.fechaInicio || '')
+        };
+      }).filter(function(et) { return et.etapa && et.fin; });
+      salida.push({
+        nomenclatura: String(nom),
+        clave: Utils.claveNomenclatura(nom),
+        fechaScraping: iFec >= 0 ? aTexto(data[i][iFec]) : '',
+        etapas: etapas
+      });
+    }
+    return Utils.successResponse({ cronogramas: salida });
+  },
+
+  /**
    * Busca una fila en la hoja DATOS_SEACE por nomenclatura.
    * Retorna { success:true, datos:null } si la hoja o la fila no existen.
    * @param {Object} params - {nomenclatura: string}
@@ -5195,7 +5337,7 @@ const DatosSeaceLookup = {
       }
 
       for (let i = 1; i < data.length; i++) {
-        if (data[i][idxNomenclatura] && String(data[i][idxNomenclatura]).trim() === nomenclatura) {
+        if (data[i][idxNomenclatura] && Utils.claveNomenclatura(data[i][idxNomenclatura]) === Utils.claveNomenclatura(nomenclatura)) {
           const registro = {};
           headers.forEach(function(header, idx) {
             registro[header] = data[i][idx];
@@ -5314,7 +5456,7 @@ const DatosSeaceLookup = {
     if (idxNom >= 0 && lastRow >= 2) {
       const colNom = sheet.getRange(2, idxNom + 1, lastRow - 1, 1).getValues();
       for (let i = 0; i < colNom.length; i++) {
-        if (colNom[i][0] && String(colNom[i][0]).trim() === nomenclatura) {
+        if (colNom[i][0] && Utils.claveNomenclatura(colNom[i][0]) === Utils.claveNomenclatura(nomenclatura)) {
           filaExistente = i + 2;
           break;
         }
