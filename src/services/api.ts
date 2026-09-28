@@ -898,8 +898,12 @@ export interface CronogramaResumen {
 
 /** Fin de cada etapa de todos los procesos de DATOS_SEACE en una llamada (Radar: hábil / no hábil). */
 export async function getCronogramasSeace(): Promise<CronogramaResumen[]> {
-  const result = await fetchAPI<{ cronogramas: CronogramaResumen[] }>('getCronogramasSeace');
-  return result.cronogramas || [];
+  const result = await fetchAPI<{ cronogramas?: CronogramaResumen[]; error?: string }>('getCronogramasSeace');
+  // Un Apps Script sin esta acción responde {success:false, error:'Acción no válida…'}
+  if (!Array.isArray(result.cronogramas)) {
+    throw new Error(result.error || 'El Apps Script no tiene getCronogramasSeace');
+  }
+  return result.cronogramas;
 }
 
 export async function getEstadoScraping(nomenclatura: string): Promise<{
